@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
 
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Button } from '@/components/atoms/button';
+import { Input } from '@/components/atoms/input';
 import {
   Field,
   FieldLabel,
@@ -12,7 +12,7 @@ import {
   FieldLegend,
   FieldContent,
   FieldTitle
-} from '@/components/ui/field';
+} from '@/components/molecules/field';
 
 const meta: Meta = {
   title: 'UI/Field',
@@ -57,9 +57,7 @@ export const WithDescription: Story = {
         <FieldLabel htmlFor="desc-email">Email</FieldLabel>
         <FieldContent>
           <Input id="desc-email" type="email" placeholder="name@example.com" />
-          <FieldDescription>
-            Email sẽ được dùng để đăng nhập và nhận thông báo.
-          </FieldDescription>
+          <FieldDescription>Email sẽ được dùng để đăng nhập và nhận thông báo.</FieldDescription>
         </FieldContent>
       </Field>
     </div>

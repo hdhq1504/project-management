@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
 
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
+import { Label } from '@/components/atoms/label';
+import { Input } from '@/components/atoms/input';
 
 const meta: Meta<typeof Label> = {
   title: 'UI/Label',
@@ -11,8 +11,7 @@ const meta: Meta<typeof Label> = {
     layout: 'centered',
     docs: {
       description: {
-        component:
-          'Label component dùng để gắn nhãn cho các phần tử form. Xây dựng trên Radix UI Label primitive.'
+        component: 'Label component dùng để gắn nhãn cho các phần tử form. Xây dựng trên Radix UI Label primitive.'
       }
     }
   },
