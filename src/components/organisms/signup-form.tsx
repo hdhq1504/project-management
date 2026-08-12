@@ -1,7 +1,7 @@
 import { cn } from '@/libs/utils';
 import { Button } from '@/components/atoms/button';
 import { Input } from '@/components/atoms/input';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import {
   Field,
   FieldDescription,
@@ -53,7 +53,7 @@ export function SignupForm({ className, ...props }: React.ComponentProps<'form'>
       <FieldGroup>
         <div className="flex flex-col items-center gap-1 text-center">
           <h1 className="text-2xl font-bold">Tạo tài khoản</h1>
-          <p className="text-sm text-balance text-muted-foreground">Nhập thông tin bên dưới để tạo tài khoản</p>
+          <p className="text-muted-foreground text-sm text-balance">Nhập thông tin bên dưới để tạo tài khoản</p>
         </div>
 
         <Field>
@@ -77,7 +77,7 @@ export function SignupForm({ className, ...props }: React.ComponentProps<'form'>
           </div>
           <div className="relative">
             <Input id="password" type="password" {...register('password')} placeholder="Nhập mật khẩu" />
-            <Button type="button" variant="ghost" size="sm" className="absolute right-0 top-1/2 -translate-y-1/2">
+            <Button type="button" variant="ghost" size="sm" className="absolute top-1/2 right-0 -translate-y-1/2">
               <Eye />
             </Button>
           </div>
