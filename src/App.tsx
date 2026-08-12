@@ -1,8 +1,8 @@
-import useRouteElements from '@/hooks/useRouteElements';
+import { useRoutes } from 'react-router';
+import { routes } from '@/routes/routes';
 
 function App() {
-  const routeElements = useRouteElements();
-  return <div>{routeElements}</div>;
+  return useRoutes(routes);
 }
 
 export default App;
