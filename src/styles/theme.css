@@ -1,0 +1,41 @@
+@theme {
+  /* Colors */
+  --color-*: initial;
+
+  --color-background: #0a0a0a;
+  --color-foreground: #fafafa;
+
+  --color-card: #171717;
+  --color-card-foreground: #fafafa;
+
+  --color-popover: #262626;
+  --color-popover-foreground: #fafafa;
+
+  --color-primary: #e5e5e5;
+  --color-primary-foreground: #171717;
+
+  --color-secondary: #262626;
+  --color-secondary-foreground: #fafafa;
+
+  --color-muted: #262626;
+  --color-muted-foreground: #a1a1a1;
+
+  --color-accent: #404040;
+  --color-accent-foreground: #fafafa;
+
+  --color-destructive: #ff6467;
+  --color-destructive-foreground: #fafafa;
+
+  --color-border: #282828;
+  --color-input: #343434;
+  --color-ring: #737373;
+
+  /* Typography */
+  --font-sans: 'Geist Variable', sans-serif;
+
+  /* Radius */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.625rem;
+  --radius-xl: 0.875rem;
+}

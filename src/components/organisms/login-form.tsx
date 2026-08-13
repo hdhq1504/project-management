@@ -1,23 +1,19 @@
 import { cn } from '@/libs/utils';
 import { Button } from '@/components/atoms/button';
-import { Input } from '@/components/atoms/input';
 import { Link } from 'react-router';
-import { Eye } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import {
-  Field,
-  FieldDescription,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-  FieldSeparator
-} from '@/components/molecules/field';
+import { Field, FieldDescription, FieldGroup, FieldSeparator } from '@/components/atoms/field';
+import FormField from '@/components/molecules/form-field';
+import { PASSWORD_MIN_LENGTH, rules } from '@/constants/validation';
 
 const loginSchema = z.object({
-  email: z.string().min(1, 'Email không được để trống').email('Email không hợp lệ'),
-  password: z.string().min(1, 'Mật khẩu không được để trống').min(6, 'Mật khẩu phải có ít nhất 6 ký tự')
+  email: z.string().nonempty(rules.EMAIL_REQUIRED).email({ error: rules.EMAIL_INVALID }),
+  password: z
+    .string()
+    .nonempty(rules.PASSWORD_REQUIRED)
+    .min(PASSWORD_MIN_LENGTH, { error: (issue) => rules.PASSWORD_MIN_LENGTH(issue.minimum) })
 });
 
 type LoginFormValues = z.infer<typeof loginSchema>;
@@ -47,27 +43,23 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'form'>)
           <p className="text-muted-foreground text-sm text-balance">Nhập thông tin bên dưới để đăng nhập</p>
         </div>
 
-        <Field>
-          <FieldLabel htmlFor="email">Email</FieldLabel>
-          <Input id="email" type="email" {...register('email')} placeholder="Nhập email" />
-          {errors.email && <FieldError>{errors.email?.message}</FieldError>}
-        </Field>
+        <FormField
+          id="email"
+          label="Email"
+          type="email"
+          placeholder="Nhập email"
+          errorMessage={errors.email?.message}
+          {...register('email')}
+        />
 
-        <Field>
-          <div className="flex items-center">
-            <FieldLabel htmlFor="password">Mật khẩu</FieldLabel>
-            <Link to="/forgot-password" className="ml-auto text-sm underline-offset-4 hover:underline">
-              Quên mật khẩu?
-            </Link>
-          </div>
-          <div className="relative">
-            <Input id="password" type="password" {...register('password')} placeholder="Nhập mật khẩu" />
-            <Button type="button" variant="ghost" size="sm" className="absolute top-1/2 right-0 -translate-y-1/2">
-              <Eye />
-            </Button>
-          </div>
-          {errors.password && <FieldError>{errors.password?.message}</FieldError>}
-        </Field>
+        <FormField
+          id="password"
+          label="Mật khẩu"
+          type="password"
+          placeholder="Nhập mật khẩu"
+          errorMessage={errors.password?.message}
+          {...register('password')}
+        />
 
         <Field>
           <Button type="submit" disabled={isSubmitting}>

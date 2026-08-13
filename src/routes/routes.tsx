@@ -5,14 +5,14 @@ import AuthLayout from '@/layouts/auth-layout';
 
 const Login = lazy(() => import('@/pages/auth/login/login-page'));
 const Signup = lazy(() => import('@/pages/auth/signup/signup-page'));
-const Workspace = lazy(() => import('@/pages/workspace/workspace'));
+const Workspace = lazy(() => import('@/pages/workspace/workspace-page'));
 const NotFound = lazy(() => import('@/pages/not-found'));
 
 export const routes: RouteObject[] = [
   {
-    path: path.home,
+    path: path.workspace,
     element: (
-      <Suspense>
+      <Suspense fallback={<div>Loading...</div>}>
         <Workspace />
       </Suspense>
     )
@@ -23,7 +23,7 @@ export const routes: RouteObject[] = [
       {
         path: path.login,
         element: (
-          <Suspense>
+          <Suspense fallback={<div>Loading...</div>}>
             <Login />
           </Suspense>
         )
@@ -31,7 +31,7 @@ export const routes: RouteObject[] = [
       {
         path: path.signup,
         element: (
-          <Suspense>
+          <Suspense fallback={<div>Loading...</div>}>
             <Signup />
           </Suspense>
         )
@@ -39,7 +39,7 @@ export const routes: RouteObject[] = [
       {
         path: '*',
         element: (
-          <Suspense>
+          <Suspense fallback={<div>Loading...</div>}>
             <NotFound />
           </Suspense>
         )
