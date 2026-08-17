@@ -6,19 +6,15 @@ export interface Database {
       users: {
         Row: {
           id: string;
-          email: string;
-          password_hash: string;
-          full_name: string;
+          username: string;
           avatar_url: string | null;
           status: 'ACTIVE' | 'INACTIVE' | 'SUSPENDED';
           created_at: string;
           updated_at: string;
         };
         Insert: {
-          id?: string;
-          email: string;
-          password_hash: string;
-          full_name: string;
+          id: string;
+          username: string;
           avatar_url?: string | null;
           status?: 'ACTIVE' | 'INACTIVE' | 'SUSPENDED';
           created_at?: string;
@@ -26,14 +22,13 @@ export interface Database {
         };
         Update: {
           id?: string;
-          email?: string;
-          password_hash?: string;
-          full_name?: string;
+          username?: string;
           avatar_url?: string | null;
           status?: 'ACTIVE' | 'INACTIVE' | 'SUSPENDED';
           created_at?: string;
           updated_at?: string;
         };
+        Relationships: [];
       };
       workspaces: {
         Row: {
@@ -63,6 +58,7 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
         };
+        Relationships: [];
       };
       workspace_members: {
         Row: {
@@ -83,6 +79,7 @@ export interface Database {
           role?: 'OWNER' | 'ADMIN' | 'MEMBER';
           joined_at?: string;
         };
+        Relationships: [];
       };
       projects: {
         Row: {
@@ -118,6 +115,7 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
         };
+        Relationships: [];
       };
       project_members: {
         Row: {
@@ -138,6 +136,7 @@ export interface Database {
           role?: 'LEAD' | 'MEMBER';
           joined_at?: string;
         };
+        Relationships: [];
       };
       sprints: {
         Row: {
@@ -170,6 +169,7 @@ export interface Database {
           status?: 'PLANNED' | 'ACTIVE' | 'COMPLETED';
           created_at?: string;
         };
+        Relationships: [];
       };
       task_statuses: {
         Row: {
@@ -199,6 +199,7 @@ export interface Database {
           color?: string;
           created_at?: string;
         };
+        Relationships: [];
       };
       tasks: {
         Row: {
@@ -252,6 +253,7 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
         };
+        Relationships: [];
       };
       labels: {
         Row: {
@@ -275,6 +277,7 @@ export interface Database {
           color?: string;
           created_at?: string;
         };
+        Relationships: [];
       };
       task_labels: {
         Row: {
@@ -289,6 +292,7 @@ export interface Database {
           task_id?: string;
           label_id?: string;
         };
+        Relationships: [];
       };
       comments: {
         Row: {
@@ -315,6 +319,7 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
         };
+        Relationships: [];
       };
     };
     Views: Record<string, never>;
