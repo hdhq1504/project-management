@@ -1,6 +1,6 @@
 import { cn } from '@/libs/utils';
 import { Button } from '@/components/atoms/button/button';
-import { Link, useNavigate } from 'react-router';
+import { Link } from 'react-router';
 import { FieldDescription, FieldError, FieldGroup, FieldSeparator } from '@/components/molecules/field/field';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -10,8 +10,7 @@ import Form from '@/components/templates/form/form';
 import FormItem from '@/components/organisms/form-item/form-item';
 import { Input } from '@/components/atoms/input/input';
 import { PasswordInput } from '@/components/atoms/input/password-input';
-import { authService } from '@/features/auth/services/auth.service';
-import { useAuthStore } from '@/features/auth/stores/auth.store';
+import { useSignup } from '@/features/auth/hooks/use-signup';
 import path from '@/constants/path';
 
 const signupSchema = z
@@ -29,7 +28,6 @@ const signupSchema = z
 type SignupFormValues = z.infer<typeof signupSchema>;
 
 export function SignupForm({ className, ...props }: React.ComponentProps<'form'>) {
-  const navigate = useNavigate();
   const form = useForm<SignupFormValues>({
     resolver: zodResolver(signupSchema),
     defaultValues: {
@@ -40,36 +38,19 @@ export function SignupForm({ className, ...props }: React.ComponentProps<'form'>
     }
   });
 
+  const signupMutation = useSignup();
+
   const onSubmit = async (values: SignupFormValues) => {
     form.clearErrors('root');
-
-    const { data, error } = await authService.signup({
-      username: values.username,
-      email: values.email,
-      password: values.password
-    });
-
-    if (error) {
-      form.setError('root', { message: error.message });
-      return;
-    }
-
-    if (!data.session || !data.user) {
-      form.setError('root', {
-        message: 'Tài khoản đã được tạo. Hãy xác nhận email, sau đó đăng nhập để vào workspace.'
+    try {
+      await signupMutation.mutateAsync({
+        username: values.username,
+        email: values.email,
+        password: values.password
       });
-      return;
+    } catch (error) {
+      form.setError('root', { message: (error as Error).message });
     }
-
-    const { data: user, error: profileError } = await authService.ensureProfile(data.user);
-
-    if (profileError || !user) {
-      form.setError('root', { message: profileError?.message ?? 'Không thể tạo hồ sơ người dùng.' });
-      return;
-    }
-
-    useAuthStore.getState().setAuth(data.session, user);
-    navigate(path.workspace, { replace: true });
   };
 
   return (
@@ -99,7 +80,7 @@ export function SignupForm({ className, ...props }: React.ComponentProps<'form'>
         <FieldError errors={[form.formState.errors.root]} />
       </FieldGroup>
 
-      <Button type="submit" disabled={form.formState.isSubmitting}>
+      <Button type="submit" disabled={signupMutation.isPending}>
         Tạo tài khoản
       </Button>
 
@@ -107,7 +88,7 @@ export function SignupForm({ className, ...props }: React.ComponentProps<'form'>
 
       <FieldDescription className="text-center">
         Đã có tài khoản?{' '}
-        <Link to="/login" className="underline underline-offset-4">
+        <Link to={path.login} className="underline underline-offset-4">
           Đăng nhập
         </Link>
       </FieldDescription>

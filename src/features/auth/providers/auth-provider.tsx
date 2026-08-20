@@ -14,17 +14,23 @@ export function AuthProvider({ children }: PropsWithChildren) {
         return;
       }
 
-      const { data: user, error } = await authService.ensureProfile(session.user);
+      // Skip if mutation already synced this session
+      const { session: currentSession, user } = useAuthStore.getState();
+      if (currentSession?.access_token === session.access_token && user) {
+        return;
+      }
+
+      const { data: profile, error } = await authService.getProfile(session.user.id);
 
       if (!isMounted) return;
 
-      if (error || !user) {
+      if (error || !profile) {
         console.error('Không thể tải hồ sơ người dùng:', error);
         useAuthStore.getState().clearAuth();
         return;
       }
 
-      useAuthStore.getState().setAuth(session, user);
+      useAuthStore.getState().setAuth(session, profile);
     };
 
     const {

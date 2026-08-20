@@ -7,6 +7,5 @@ export function PublicRoute() {
   const isInitialized = useAuthStore((state) => state.isInitialized);
 
   if (!isInitialized) return <div>Đang kiểm tra phiên đăng nhập...</div>;
-
-  return session ? <Navigate to={path.workspace} replace /> : <Outlet />;
+  return session ? <Navigate to={path.issues} replace /> : <Outlet />;
 }

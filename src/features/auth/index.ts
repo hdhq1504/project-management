@@ -4,3 +4,6 @@ export * from './providers/auth-provider';
 export * from './guards/protected-route';
 export * from './guards/public-route';
 export * from './stores/auth.store';
+export * from './hooks/use-login';
+export * from './hooks/use-signup';
+export * from './hooks/use-logout';

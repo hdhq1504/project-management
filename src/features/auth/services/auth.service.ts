@@ -1,16 +1,13 @@
+import type { LoginParams, SignupParams } from '@/features/auth/types';
 import { supabase } from '@/libs/supabase';
-import type { User } from '@supabase/supabase-js';
 
-type LoginParams = {
-  email: string;
-  password: string;
-};
+function fetchProfile(userId: string) {
+  return supabase.from('users').select('*').eq('id', userId).single();
+}
 
-type SignupParams = {
-  username: string;
-  email: string;
-  password: string;
-};
+type ProfileResult = Awaited<ReturnType<typeof fetchProfile>>;
+
+const pendingProfileRequests = new Map<string, Promise<ProfileResult>>();
 
 export const authService = {
   login({ email, password }: LoginParams) {
@@ -27,19 +24,21 @@ export const authService = {
       }
     });
   },
-  async ensureProfile(user: User) {
-    const existingProfile = await supabase.from('users').select('*').eq('id', user.id).maybeSingle();
+  getProfile(userId: string) {
+    const pendingRequest = pendingProfileRequests.get(userId);
 
-    if (existingProfile.error || existingProfile.data) {
-      return existingProfile;
+    if (pendingRequest) {
+      return pendingRequest;
     }
 
-    const username =
-      typeof user.user_metadata.username === 'string' && user.user_metadata.username.trim()
-        ? user.user_metadata.username.trim()
-        : (user.email?.split('@')[0] ?? 'user');
+    const request = Promise.resolve(fetchProfile(userId)).finally(() => {
+      if (pendingProfileRequests.get(userId) === request) {
+        pendingProfileRequests.delete(userId);
+      }
+    });
 
-    return supabase.from('users').upsert({ id: user.id, username }, { onConflict: 'id' }).select('*').single();
+    pendingProfileRequests.set(userId, request);
+    return request;
   },
   logout() {
     return supabase.auth.signOut();
