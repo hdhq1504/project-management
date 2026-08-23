@@ -10,19 +10,24 @@ export type FormProps<TFieldValues extends FieldValues, TContext = unknown, TTra
   onFinish?: SubmitHandler<TTransformedValues, void>;
 };
 
-const Form = <TFieldValues extends FieldValues, TContext = unknown, TTransformedValues = TFieldValues>({
+function Form<TFieldValues extends FieldValues, TContext = unknown, TTransformedValues = TFieldValues>({
   children,
   form,
   onFinish = () => {},
   ...props
-}: FormProps<TFieldValues, TContext, TTransformedValues>) => {
+}: FormProps<TFieldValues, TContext, TTransformedValues>) {
+  const handleFinish: SubmitHandler<TTransformedValues, void> = (values, event) => {
+    form.clearErrors('root');
+    onFinish(values, event);
+  };
+
   return (
     <FormProvider {...form}>
-      <form {...props} onSubmit={form?.handleSubmit(onFinish)}>
+      <form {...props} onSubmit={form.handleSubmit(handleFinish)}>
         {children}
       </form>
     </FormProvider>
   );
-};
+}
 
 export default Form;

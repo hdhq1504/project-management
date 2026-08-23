@@ -9,7 +9,7 @@ import Form from '@/components/templates/form/form';
 import FormItem from '@/components/organisms/form-item/form-item';
 import { FieldDescription, FieldError, FieldGroup, FieldSeparator } from '@/components/molecules/field/field';
 import { Input } from '@/components/atoms/input/input';
-import { PasswordInput } from '@/components/atoms/input/password-input';
+import { InputPassword } from '@/components/atoms/input/input-password';
 import { useLogin } from '@/features/auth/hooks/use-login';
 import path from '@/constants/path';
 
@@ -29,16 +29,8 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'form'>)
     }
   });
 
-  const loginMutation = useLogin();
-
-  const onSubmit = async (values: LoginFormValues) => {
-    form.clearErrors('root');
-    try {
-      await loginMutation.mutateAsync(values);
-    } catch (error) {
-      form.setError('root', { message: (error as Error).message });
-    }
-  };
+  const { mutate, isPending } = useLogin();
+  const onSubmit = (values: LoginFormValues) => mutate(values);
 
   return (
     <Form form={form} onFinish={onSubmit} className={cn('flex flex-col gap-6', className)} {...props}>
@@ -53,13 +45,13 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'form'>)
         </FormItem>
 
         <FormItem name="password" label="Mật khẩu">
-          <PasswordInput autoComplete="current-password" placeholder="Nhập mật khẩu" />
+          <InputPassword autoComplete="current-password" placeholder="Nhập mật khẩu" />
         </FormItem>
 
         <FieldError errors={[form.formState.errors.root]} />
       </FieldGroup>
 
-      <Button type="submit" disabled={loginMutation.isPending}>
+      <Button type="submit" disabled={isPending}>
         Đăng nhập
       </Button>
 

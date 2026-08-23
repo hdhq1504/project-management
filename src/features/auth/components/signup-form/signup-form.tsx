@@ -3,13 +3,13 @@ import { Button } from '@/components/atoms/button/button';
 import { Link } from 'react-router';
 import { FieldDescription, FieldError, FieldGroup, FieldSeparator } from '@/components/molecules/field/field';
 import { useForm } from 'react-hook-form';
-import { z } from 'zod';
+import { z } from '@/libs/zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { PASSWORD_MIN_LENGTH, USERNAME_MIN_LENGTH } from '@/constants/validation';
 import Form from '@/components/templates/form/form';
 import FormItem from '@/components/organisms/form-item/form-item';
 import { Input } from '@/components/atoms/input/input';
-import { PasswordInput } from '@/components/atoms/input/password-input';
+import { InputPassword } from '@/components/atoms/input/input-password';
 import { useSignup } from '@/features/auth/hooks/use-signup';
 import path from '@/constants/path';
 
@@ -38,20 +38,8 @@ export function SignupForm({ className, ...props }: React.ComponentProps<'form'>
     }
   });
 
-  const signupMutation = useSignup();
-
-  const onSubmit = async (values: SignupFormValues) => {
-    form.clearErrors('root');
-    try {
-      await signupMutation.mutateAsync({
-        username: values.username,
-        email: values.email,
-        password: values.password
-      });
-    } catch (error) {
-      form.setError('root', { message: (error as Error).message });
-    }
-  };
+  const { mutateAsync: signup, isPending } = useSignup();
+  const onSubmit = ({ username, email, password }: SignupFormValues) => signup({ username, email, password });
 
   return (
     <Form form={form} onFinish={onSubmit} className={cn('flex flex-col gap-6', className)} {...props}>
@@ -70,17 +58,17 @@ export function SignupForm({ className, ...props }: React.ComponentProps<'form'>
         </FormItem>
 
         <FormItem name="password" label="Mật khẩu">
-          <PasswordInput autoComplete="new-password" placeholder="Nhập mật khẩu" />
+          <InputPassword autoComplete="new-password" placeholder="Nhập mật khẩu" />
         </FormItem>
 
         <FormItem name="confirmPassword" label="Xác nhận mật khẩu">
-          <PasswordInput autoComplete="new-password" placeholder="Xác nhận mật khẩu" />
+          <InputPassword autoComplete="new-password" placeholder="Xác nhận mật khẩu" />
         </FormItem>
 
         <FieldError errors={[form.formState.errors.root]} />
       </FieldGroup>
 
-      <Button type="submit" disabled={signupMutation.isPending}>
+      <Button type="submit" disabled={isPending}>
         Tạo tài khoản
       </Button>
 
