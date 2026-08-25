@@ -1,7 +1,7 @@
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Trash2, Plus, Download, Mail } from 'lucide-react';
 
-import { Button } from '@/components/atoms/button';
+import { Button } from '@/components/atoms/button/button';
 
 const meta: Meta<typeof Button> = {
   title: 'UI/Button',
@@ -11,8 +11,7 @@ const meta: Meta<typeof Button> = {
     layout: 'centered',
     docs: {
       description: {
-        component:
-          'Button component hỗ trợ nhiều variants và sizes khác nhau. Được xây dựng trên CVA (class-variance-authority).'
+        component: 'Button theo API shadcn: native button props kết hợp với variant, size và asChild.'
       }
     }
   },
@@ -41,20 +40,13 @@ const meta: Meta<typeof Button> = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-// ─────────────────────────────────────────────
-// Default
-// ─────────────────────────────────────────────
 export const Default: Story = {
   args: {
     children: 'Click me'
   }
 };
 
-// ─────────────────────────────────────────────
-// Tất cả Variants
-// ─────────────────────────────────────────────
 export const AllVariants: Story = {
-  name: 'All Variants',
   render: () => (
     <div className="flex flex-wrap items-center gap-3 p-4">
       <Button variant="default">Default</Button>
@@ -67,11 +59,7 @@ export const AllVariants: Story = {
   )
 };
 
-// ─────────────────────────────────────────────
-// Tất cả Sizes
-// ─────────────────────────────────────────────
 export const AllSizes: Story = {
-  name: 'All Sizes',
   render: () => (
     <div className="flex flex-wrap items-end gap-3 p-4">
       <Button size="xs">Extra Small</Button>
@@ -82,11 +70,7 @@ export const AllSizes: Story = {
   )
 };
 
-// ─────────────────────────────────────────────
-// Với Icon
-// ─────────────────────────────────────────────
 export const WithIcon: Story = {
-  name: 'With Icons',
   render: () => (
     <div className="flex flex-wrap items-center gap-3 p-4">
       <Button>
@@ -109,11 +93,7 @@ export const WithIcon: Story = {
   )
 };
 
-// ─────────────────────────────────────────────
-// Icon Only
-// ─────────────────────────────────────────────
 export const IconOnly: Story = {
-  name: 'Icon Only',
   render: () => (
     <div className="flex flex-wrap items-center gap-3 p-4">
       <Button size="icon-xs" variant="ghost" aria-label="Xóa">
@@ -132,9 +112,6 @@ export const IconOnly: Story = {
   )
 };
 
-// ─────────────────────────────────────────────
-// Disabled
-// ─────────────────────────────────────────────
 export const Disabled: Story = {
   args: {
     children: 'Disabled button',
