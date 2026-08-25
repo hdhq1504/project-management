@@ -1,5 +1,5 @@
 const path = {
-  dashboard: '/',
+  workspace: '/',
   login: '/login',
   signup: '/signup',
   logout: '/logout'

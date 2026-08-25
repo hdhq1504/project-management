@@ -1,7 +1,7 @@
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react-vite';
 
-import { Button } from '@/components/atoms/button';
-import { Input } from '@/components/atoms/input';
+import { Button } from '@/components/atoms/button/button';
+import { Input } from '@/components/atoms/input/input';
 import {
   Field,
   FieldLabel,
@@ -12,7 +12,7 @@ import {
   FieldLegend,
   FieldContent,
   FieldTitle
-} from '@/components/molecules/field';
+} from '@/components/molecules/field/field';
 
 const meta: Meta = {
   title: 'UI/Field',
@@ -31,9 +31,6 @@ const meta: Meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-// ─────────────────────────────────────────────
-// Field đơn giản
-// ─────────────────────────────────────────────
 export const SimpleField: Story = {
   name: 'Simple Field',
   render: () => (
@@ -46,9 +43,6 @@ export const SimpleField: Story = {
   )
 };
 
-// ─────────────────────────────────────────────
-// Field với Description
-// ─────────────────────────────────────────────
 export const WithDescription: Story = {
   name: 'Field with Description',
   render: () => (
@@ -64,9 +58,6 @@ export const WithDescription: Story = {
   )
 };
 
-// ─────────────────────────────────────────────
-// Field với Error
-// ─────────────────────────────────────────────
 export const WithError: Story = {
   name: 'Field with Error',
   render: () => (
@@ -82,9 +73,6 @@ export const WithError: Story = {
   )
 };
 
-// ─────────────────────────────────────────────
-// FieldGroup — Nhiều fields
-// ─────────────────────────────────────────────
 export const GroupOfFields: Story = {
   name: 'Field Group',
   render: () => (
@@ -111,9 +99,6 @@ export const GroupOfFields: Story = {
   )
 };
 
-// ─────────────────────────────────────────────
-// FieldSet
-// ─────────────────────────────────────────────
 export const WithFieldSet: Story = {
   name: 'FieldSet',
   render: () => (
@@ -138,9 +123,6 @@ export const WithFieldSet: Story = {
   )
 };
 
-// ─────────────────────────────────────────────
-// Horizontal Orientation
-// ─────────────────────────────────────────────
 export const HorizontalField: Story = {
   name: 'Horizontal Orientation',
   render: () => (
