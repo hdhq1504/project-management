@@ -3,7 +3,6 @@ import { Button } from '@/components/atoms/button/button';
 import { EditIcon, SearchIcon } from '@/components/atoms/icon';
 
 export default function SidebarHeader() {
-
   return (
     <header className="flex flex-col gap-3">
       <div className="flex items-center justify-between">

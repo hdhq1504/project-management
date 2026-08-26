@@ -1,28 +1,29 @@
-import * as React from 'react';
-
 import { cn } from '@/libs/utils';
+import { type ComponentProps, type CSSProperties } from 'react';
 
-export interface IconProps extends React.ComponentProps<'svg'> {
-  size?: number | string;
-}
+export type IconProps = ComponentProps<'svg'> & {
+  size?: CSSProperties['width'];
+};
 
 function Icon({
   size = 16,
   width,
   height,
+  viewBox = '0 0 16 16',
+  fill = 'currentColor',
+  stroke = 'transparent',
   className,
   children,
-  fill = 'none',
-  xmlns = 'http://www.w3.org/2000/svg',
   ...props
 }: IconProps) {
   return (
     <svg
       width={width ?? size}
       height={height ?? size}
+      viewBox={viewBox}
       fill={fill}
-      xmlns={xmlns}
-      className={cn('text-[#858699] shrink-0', className)}
+      stroke={stroke}
+      className={cn('shrink-0 transition-colors group-hover:text-[#EEEFFC] group-[.active]:text-[#EEEFFC]', className)}
       {...props}
     >
       {children}

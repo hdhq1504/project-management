@@ -1,14 +1,14 @@
-import type { NavigationItem } from './sidebar-data';
-import { SidebarItem } from './sidebar-item';
+import { cn } from '@/libs/utils';
+import { SidebarItem, type SidebarItemProps } from './sidebar-item';
 
-interface SidebarNavigationProps {
-  items: NavigationItem[];
+type SidebarNavigationProps = {
+  items: SidebarItemProps['item'][];
   className?: string;
-}
+};
 
 export function SidebarNavigation({ items, className }: SidebarNavigationProps) {
   return (
-    <nav className={className ?? 'flex flex-col space-y-0.5'}>
+    <nav className={cn('flex flex-col space-y-0.5', className)}>
       {items.map((item) => (
         <SidebarItem key={item.id} item={item} />
       ))}
