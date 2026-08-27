@@ -1,8 +1,11 @@
 import { Avatar, AvatarBadge, AvatarFallback, AvatarImage } from '@/components/atoms/avatar/avatar';
 import { Button } from '@/components/atoms/button/button';
 import { EditIcon, SearchIcon } from '@/components/atoms/icon';
+import { useIssueModalStore } from '@/features/issues/stores/issue-modal.store';
 
 export default function SidebarHeader() {
+  const openNewIssueModal = useIssueModalStore((state) => state.open);
+
   return (
     <header className="flex flex-col gap-3">
       <div className="flex items-center justify-between">
@@ -24,7 +27,7 @@ export default function SidebarHeader() {
 
       <div className="flex items-center gap-2">
         {/* New Issue Button */}
-        <Button variant="outline" className="flex flex-1 justify-start">
+        <Button variant="outline" className="flex flex-1 justify-start" onClick={openNewIssueModal}>
           <EditIcon />
           New Issue
         </Button>
@@ -34,8 +37,6 @@ export default function SidebarHeader() {
           <SearchIcon />
         </Button>
       </div>
-
-
     </header>
   );
 }

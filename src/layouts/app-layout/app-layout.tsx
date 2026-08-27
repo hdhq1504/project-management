@@ -1,5 +1,6 @@
 import AppSidebar from '@/layouts/app-layout/app-sidebar';
 import { Outlet } from 'react-router';
+import { NewIssueModal } from '@/features/issues/components/new-issue-modal';
 
 export default function AppLayout() {
   return (
@@ -11,6 +12,8 @@ export default function AppLayout() {
       <main className="min-h-100dvh min-w-0 flex-1">
         <Outlet />
       </main>
+
+      <NewIssueModal />
     </div>
   );
 }

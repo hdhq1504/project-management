@@ -1,0 +1,15 @@
+import { Icon, type IconProps } from './icon';
+
+function CircleIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path
+        fillRule="evenodd"
+        clipRule="evenodd"
+        d="M8 3C5.23858 3 3 5.23858 3 8C3 10.7614 5.23858 13 8 13C10.7614 13 13 10.7614 13 8C13 5.23858 10.7614 3 8 3ZM1 8C1 4.13401 4.13401 1 8 1C11.866 1 15 4.13401 15 8C15 11.866 11.866 15 8 15C4.13401 15 1 11.866 1 8Z"
+      />
+    </Icon>
+  );
+}
+
+export { CircleIcon };
