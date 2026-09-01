@@ -6,7 +6,7 @@ import { BrowserRouter } from 'react-router';
 import { QueryClientProvider } from '@tanstack/react-query';
 import ErrorBoundary from '@/components/templates/error-boundary.tsx';
 import App from '@/App';
-import { AuthProvider } from '@/features/auth/providers/auth-provider';
+import { AuthProvider } from '@/providers/auth-provider';
 import { queryClient } from '@/libs/query-client';
 
 createRoot(document.getElementById('root')!).render(

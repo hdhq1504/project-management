@@ -5,7 +5,7 @@ import { CheckIcon } from '@/components/atoms/icon/check-icon';
 
 export type CheckboxProps = Omit<ComponentProps<'input'>, 'type'>;
 
-function Checkbox({ className, id, ...props }: CheckboxProps) {
+function Checkbox({ className, id, checked, ...props }: CheckboxProps) {
   const generatedId = useId();
   const checkboxId = id ?? generatedId;
 
@@ -15,6 +15,7 @@ function Checkbox({ className, id, ...props }: CheckboxProps) {
         id={checkboxId}
         type="checkbox"
         data-slot="checkbox"
+        checked={checked}
         className={cn(
           'peer absolute inset-0 size-full cursor-pointer opacity-0',
           'disabled:cursor-not-allowed',
@@ -25,12 +26,12 @@ function Checkbox({ className, id, ...props }: CheckboxProps) {
       <span
         className={cn(
           'border-primary/40 bg-background pointer-events-none flex size-4 items-center justify-center rounded-sm border transition-colors',
-          'group-has-checked:border-primary group-has-checked:bg-primary',
+          checked && 'border-primary bg-primary text-primary-foreground',
           'peer-focus-visible:ring-ring/50 peer-focus-visible:ring-3 peer-focus-visible:outline-none',
           'peer-disabled:opacity-50'
         )}
       >
-        <CheckIcon className="hidden size-3 text-white group-has-checked:block" />
+        {checked && <CheckIcon className="size-3 text-white" />}
       </span>
     </span>
   );

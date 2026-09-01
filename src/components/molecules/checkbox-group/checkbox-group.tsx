@@ -1,6 +1,7 @@
-import { Checkbox, type CheckboxProps } from '@/components/atoms/checkbox/checkbox';
-import { cn } from '@/libs/utils';
 import { createContext, useContext, type ComponentProps, type ReactNode } from 'react';
+import { Checkbox, type CheckboxProps } from '@/components/atoms/checkbox';
+import { Label } from '@/components/atoms/label';
+import { cn } from '@/libs/utils';
 
 type CheckboxGroupContextValue = {
   value: string[];
@@ -71,11 +72,10 @@ function CheckboxGroupItem({
   const isDisabled = group.disabled || disabled;
 
   return (
-    <label
-      data-slot="checkbox-group-item"
+    <Label
       data-disabled={isDisabled || undefined}
       className={cn(
-        'group/item flex min-h-8 w-full cursor-pointer items-center gap-2.5 rounded-lg px-2.5 py-1.5 transition-colors select-none',
+        'group/item flex min-h-8 w-full cursor-pointer items-center gap-2.5 rounded-lg px-2.5 py-1.5 transition-colors select-none font-normal',
         'focus-within:bg-muted hover:bg-muted',
         'data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50',
         className
@@ -91,7 +91,7 @@ function CheckboxGroupItem({
         onChange={(e) => group.setItemChecked(itemValue, e.target.checked)}
       />
       {children}
-    </label>
+    </Label>
   );
 }
 
