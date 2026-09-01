@@ -23,4 +23,4 @@ function ButtonVisibleStatus({ isVisible, ...props }: ButtonVisibleStatusProps) 
   );
 }
 
-export default ButtonVisibleStatus;
+export { ButtonVisibleStatus };

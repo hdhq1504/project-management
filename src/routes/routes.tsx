@@ -1,15 +1,13 @@
 import { lazy, Suspense } from 'react';
-import { Navigate, type RouteObject } from 'react-router';
+import { Navigate, Outlet, type RouteObject } from 'react-router';
 import path from '@/constants/path';
-import AuthLayout from '@/layouts/auth-layout';
-import AppLayout from '@/layouts/app-layout';
-import WorkspaceLayout from '@/layouts/workspace-layout';
-import { ProtectedRoute } from '@/features/auth/guards/protected-route';
-import { PublicRoute } from '@/features/auth/guards/public-route';
+import { AppLayout } from '@/components/templates/app-layout';
+import { AuthLayout } from '@/components/templates/auth-layout';
+import { ProtectedRoute, PublicRoute } from '@/routes/guards';
 
-const Login = lazy(() => import('@/pages/auth/login/login-page'));
-const Signup = lazy(() => import('@/pages/auth/signup/signup-page'));
-const Issues = lazy(() => import('@/pages/issues/issues-page'));
+const Login = lazy(() => import('@/pages/login'));
+const Signup = lazy(() => import('@/pages/signup'));
+const Issues = lazy(() => import('@/pages/issues'));
 const NotFound = lazy(() => import('@/pages/not-found'));
 
 export const routes: RouteObject[] = [
@@ -21,20 +19,19 @@ export const routes: RouteObject[] = [
         element: <Navigate to={path.issues} replace />
       },
       {
-        element: <AppLayout />,
+        element: (
+          <AppLayout>
+            <Outlet />
+          </AppLayout>
+        ),
         children: [
           {
-            element: <WorkspaceLayout />,
-            children: [
-              {
-                path: path.issues,
-                element: (
-                  <Suspense fallback={<div>Loading...</div>}>
-                    <Issues />
-                  </Suspense>
-                )
-              }
-            ]
+            path: path.issues,
+            element: (
+              <Suspense fallback={<div>Loading...</div>}>
+                <Issues />
+              </Suspense>
+            )
           }
         ]
       }
@@ -44,7 +41,11 @@ export const routes: RouteObject[] = [
     element: <PublicRoute />,
     children: [
       {
-        element: <AuthLayout />,
+        element: (
+          <AuthLayout>
+            <Outlet />
+          </AuthLayout>
+        ),
         children: [
           {
             path: path.login,
