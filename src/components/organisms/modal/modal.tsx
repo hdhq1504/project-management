@@ -73,6 +73,20 @@ function Modal({
   useFocusTrap(dialogRef, isOpen);
 
   useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!isOpen || !dialog) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        close();
+      }
+    };
+
+    dialog.addEventListener('keydown', handleKeyDown);
+    return () => dialog.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, close]);
+
+  useEffect(() => {
     const backdrop = backdropRef.current;
     if (!backdrop || !isOpen) return;
 

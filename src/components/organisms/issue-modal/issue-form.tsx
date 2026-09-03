@@ -18,7 +18,7 @@ export type IssueFormProps = {
 export function IssueForm({ onClose, onSubmit, isPending = false }: IssueFormProps) {
   const form = useForm<IssueFields>({
     resolver: zodResolver(issueSchema),
-    defaultValues: { title: '', description: '', labels: [] }
+    defaultValues: { title: '', description: '', status: 'backlog', priority: 'no_priority', labels: [] }
   });
 
   const { reset } = form;

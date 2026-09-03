@@ -1,13 +1,26 @@
-import { Icon, type IconProps } from './icon';
+import type { IconProps } from './icon';
+import { PriorityNoPriorityIcon } from '@/components/atoms/icon/priority-no-priority-icon';
+import { PriorityUrgentIcon } from '@/components/atoms/icon/priority-urgent-icon';
+import { PriorityHighIcon } from '@/components/atoms/icon/priority-high-icon';
+import { PriorityMediumIcon } from '@/components/atoms/icon/priority-medium-icon';
+import { PriorityLowIcon } from '@/components/atoms/icon/priority-low-icon';
 
-function PriorityIcon(props: IconProps) {
-  return (
-    <Icon {...props}>
-      <path d="M8 5H7C6.44772 5 6 5.44772 6 6V13C6 13.5523 6.44772 14 7 14H8C8.55228 14 9 13.5523 9 13V6C9 5.44772 8.55228 5 8 5Z" />
-      <path d="M3 8H2C1.44772 8 1 8.44772 1 9V13C1 13.5523 1.44772 14 2 14H3C3.55228 14 4 13.5523 4 13V9C4 8.44772 3.55228 8 3 8Z" />
-      <path d="M13 2H12C11.4477 2 11 2.44772 11 3V13C11 13.5523 11.4477 14 12 14H13C13.5523 14 14 13.5523 14 13V3C14 2.44772 13.5523 2 13 2Z" />
-    </Icon>
-  );
+export type PriorityIconProps = IconProps & {
+  priority?: string;
+};
+
+export function PriorityIcon({ priority, ...props }: PriorityIconProps) {
+  switch (priority) {
+    case 'urgent':
+      return <PriorityUrgentIcon {...props} />;
+    case 'high':
+      return <PriorityHighIcon {...props} />;
+    case 'medium':
+      return <PriorityMediumIcon {...props} />;
+    case 'low':
+      return <PriorityLowIcon {...props} />;
+    case 'no_priority':
+    default:
+      return <PriorityNoPriorityIcon {...props} />;
+  }
 }
-
-export { PriorityIcon };

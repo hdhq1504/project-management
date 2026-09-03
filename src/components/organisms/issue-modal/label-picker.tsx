@@ -1,6 +1,7 @@
 import { ColorDot } from '@/components/atoms/color-dot';
 import { CheckboxGroup, CheckboxGroupItem } from '@/components/molecules/checkbox-group';
 import { LABELS } from '@/constants/issue-label';
+import { useLabelPicker, type UseLabelPickerProps } from '@/hooks/use-label-picker';
 
 type LabelOptionProps = {
   value: string;
@@ -18,29 +19,22 @@ function LabelOption({ value, name, color, disabled }: LabelOptionProps) {
   );
 }
 
-export type LabelPickerProps = {
-  value?: string[];
-  onChange?: (value: string[]) => void;
-  onValueChange?: (value: string[]) => void;
-};
+export type LabelPickerProps = UseLabelPickerProps;
 
-export function LabelPicker({ value = [], onChange, onValueChange }: LabelPickerProps) {
-  const handleChange = (val: string[]) => {
-    onChange?.(val);
-    onValueChange?.(val);
-  };
+export function LabelPicker(props: LabelPickerProps) {
+  const { selectedLabels, handleValueChange } = useLabelPicker(props);
 
   return (
     <div className="flex w-[230px] flex-col select-none">
       <CheckboxGroup
         name="labels"
-        value={value}
-        onValueChange={handleChange}
+        value={selectedLabels}
+        onValueChange={handleValueChange}
         aria-label="Issue labels"
         className="flex max-h-60 flex-col gap-0.5 overflow-y-auto p-1.5"
       >
-        {LABELS.map((label) => (
-          <LabelOption key={label.id} value={label.id} name={label.name} color={label.color} />
+        {LABELS.map(({ id, name, color }) => (
+          <LabelOption key={id} value={id} name={name} color={color} />
         ))}
       </CheckboxGroup>
     </div>
