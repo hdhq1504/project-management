@@ -23,7 +23,7 @@ function Icon({
       viewBox={viewBox}
       fill={fill}
       stroke={stroke}
-      className={cn('shrink-0 transition-colors group-hover:text-[#EEEFFC] group-[.active]:text-[#EEEFFC]', className)}
+      className={cn('shrink-0 transition-colors', className)}
       {...props}
     >
       {children}

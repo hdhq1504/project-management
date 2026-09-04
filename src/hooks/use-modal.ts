@@ -1,5 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
-import { useKeyboard } from '@/hooks/use-keyboard';
+import { useCallback, useState } from 'react';
 import { useScrollLock } from '@/hooks/use-scroll-lock';
 
 export type UseModalProps = {
@@ -32,9 +31,6 @@ export function useModal({ open: controlledOpen, defaultOpen = false, onOpenChan
   }, [isControlled, isOpen, onClose, onOpenChange]);
 
   useScrollLock(isOpen);
-
-  const escShortcut = useMemo(() => [{ key: 'Escape', handler: close }], [close]);
-  useKeyboard(escShortcut, isOpen);
 
   return {
     isOpen,

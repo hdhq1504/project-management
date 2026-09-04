@@ -1,49 +1,34 @@
-import { useWatch } from 'react-hook-form';
-import { ColorDot } from '@/components/atoms/color-dot';
-import { CircleIcon, LabelIcon, PriorityIcon, UserCircleIcon } from '@/components/atoms/icon';
-import { FormItem } from '@/components/molecules/form';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/molecules/popover';
+import { UserCircleIcon } from '@/components/atoms/icon';
+import { StatusIcon } from '@/components/atoms/icon/status-icon';
+import { PriorityIcon } from '@/components/atoms/icon/priority-icon';
 import { ButtonIssueProperty } from '@/components/atoms/button';
-import { LabelPicker } from './label-picker';
-import { getLabelSummary, getSelectedLabelObjects } from '@/libs/issue-label';
-import type { IssueFields } from '@/schemas/issue.schema';
+import { ISSUE_STATUSES } from '@/constants/issue-status';
+import { ISSUE_PRIORITIES } from '@/constants/issue-priority';
+import { IssuePropertySelect } from './issue-property-select';
+import { IssueLabelProperty } from './issue-label-property';
 
 export function IssueProperties() {
-  const labels = useWatch<IssueFields, 'labels'>({ name: 'labels' }) ?? [];
-  const selectedLabels = getSelectedLabelObjects(labels);
-
-  const labelIcon =
-    selectedLabels.length === 0 ? (
-      <LabelIcon />
-    ) : selectedLabels.length === 1 ? (
-      <ColorDot color={selectedLabels[0].color} />
-    ) : (
-      <div className="flex items-center -space-x-1">
-        {selectedLabels.map((label) => (
-          <ColorDot key={label.id} color={label.color} className="ring-background ring-1" />
-        ))}
-      </div>
-    );
-
   return (
     <div className="flex flex-wrap items-center gap-1.5 px-4 py-3">
-      <ButtonIssueProperty icon={<CircleIcon />}>Backlog</ButtonIssueProperty>
+      <IssuePropertySelect
+        name="status"
+        items={ISSUE_STATUSES}
+        defaultValue="backlog"
+        placeholder="Status"
+        renderIcon={(item) => <StatusIcon status={item.id} className="size-4" />}
+      />
 
-      <ButtonIssueProperty icon={<PriorityIcon />}>Priority</ButtonIssueProperty>
+      <IssuePropertySelect
+        name="priority"
+        items={ISSUE_PRIORITIES}
+        defaultValue="no_priority"
+        placeholder="Priority"
+        renderIcon={(item) => <PriorityIcon priority={item.id} className="size-4" />}
+      />
 
       <ButtonIssueProperty icon={<UserCircleIcon />}>Assignee</ButtonIssueProperty>
 
-      <Popover>
-        <PopoverTrigger asChild>
-          <ButtonIssueProperty icon={labelIcon}>{getLabelSummary(labels)}</ButtonIssueProperty>
-        </PopoverTrigger>
-
-        <PopoverContent align="start" className="w-[230px] p-0 shadow-xl" onOpenAutoFocus={(e) => e.preventDefault()}>
-          <FormItem<IssueFields> name="labels">
-            <LabelPicker />
-          </FormItem>
-        </PopoverContent>
-      </Popover>
+      <IssueLabelProperty />
     </div>
   );
 }
