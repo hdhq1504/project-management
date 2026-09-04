@@ -1,26 +1,24 @@
 import type { IconProps } from './icon';
+import type { IssuePriorityId } from '@/constants/issue-priority';
 import { PriorityNoPriorityIcon } from '@/components/atoms/icon/priority-no-priority-icon';
 import { PriorityUrgentIcon } from '@/components/atoms/icon/priority-urgent-icon';
 import { PriorityHighIcon } from '@/components/atoms/icon/priority-high-icon';
 import { PriorityMediumIcon } from '@/components/atoms/icon/priority-medium-icon';
 import { PriorityLowIcon } from '@/components/atoms/icon/priority-low-icon';
 
+const PRIORITY_ICONS = {
+  no_priority: PriorityNoPriorityIcon,
+  urgent: PriorityUrgentIcon,
+  high: PriorityHighIcon,
+  medium: PriorityMediumIcon,
+  low: PriorityLowIcon
+} as const;
+
 export type PriorityIconProps = IconProps & {
-  priority?: string;
+  priority?: IssuePriorityId;
 };
 
-export function PriorityIcon({ priority, ...props }: PriorityIconProps) {
-  switch (priority) {
-    case 'urgent':
-      return <PriorityUrgentIcon {...props} />;
-    case 'high':
-      return <PriorityHighIcon {...props} />;
-    case 'medium':
-      return <PriorityMediumIcon {...props} />;
-    case 'low':
-      return <PriorityLowIcon {...props} />;
-    case 'no_priority':
-    default:
-      return <PriorityNoPriorityIcon {...props} />;
-  }
+export function PriorityIcon({ priority = 'no_priority', ...props }: PriorityIconProps) {
+  const PriorityIconComponent = PRIORITY_ICONS[priority];
+  return <PriorityIconComponent {...props} />;
 }

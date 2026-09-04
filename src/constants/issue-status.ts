@@ -1,12 +1,4 @@
-export type IssueStatusId = 'backlog' | 'todo' | 'in_progress' | 'done' | 'canceled';
-
-export type IssueStatus = {
-  id: IssueStatusId;
-  name: string;
-  shortcut: string;
-};
-
-export const ISSUE_STATUSES: IssueStatus[] = [
+export const ISSUE_STATUSES = [
   {
     id: 'backlog',
     name: 'Backlog',
@@ -32,4 +24,7 @@ export const ISSUE_STATUSES: IssueStatus[] = [
     name: 'Canceled',
     shortcut: '5'
   }
-];
+] as const;
+
+export type IssueStatus = (typeof ISSUE_STATUSES)[number];
+export type IssueStatusId = IssueStatus['id'];

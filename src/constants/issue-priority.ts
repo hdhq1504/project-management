@@ -1,12 +1,4 @@
-export type IssuePriorityId = 'no_priority' | 'urgent' | 'high' | 'medium' | 'low';
-
-export type IssuePriority = {
-  id: IssuePriorityId;
-  name: string;
-  shortcut: string;
-};
-
-export const ISSUE_PRIORITIES: IssuePriority[] = [
+export const ISSUE_PRIORITIES = [
   {
     id: 'no_priority',
     name: 'No priority',
@@ -32,4 +24,7 @@ export const ISSUE_PRIORITIES: IssuePriority[] = [
     name: 'Low',
     shortcut: '4'
   }
-];
+] as const;
+
+export type IssuePriority = (typeof ISSUE_PRIORITIES)[number];
+export type IssuePriorityId = IssuePriority['id'];
