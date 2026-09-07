@@ -23,3 +23,4 @@ export * from './status-todo-icon';
 export * from './status-in-progress-icon';
 export * from './status-done-icon';
 export * from './status-canceled-icon';
+export * from './chevron-down-icon';
