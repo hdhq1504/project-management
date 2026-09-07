@@ -18,7 +18,9 @@ export type StatusIconProps = IconProps & {
   status?: IssueStatusId;
 };
 
-export function StatusIcon({ status = 'backlog', ...props }: StatusIconProps) {
+function StatusIcon({ status = 'backlog', ...props }: StatusIconProps) {
   const StatusIconComponent = STATUS_ICONS[status];
   return <StatusIconComponent {...props} />;
 }
+
+export { StatusIcon };

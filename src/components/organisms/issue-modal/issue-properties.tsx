@@ -1,36 +1,62 @@
-import { UserCircleIcon } from '@/components/atoms/icon';
-import { StatusIcon } from '@/components/atoms/icon/status-icon';
-import { PriorityIcon } from '@/components/atoms/icon/priority-icon';
+import { useController, useFormContext } from 'react-hook-form';
+import { UserCircleIcon, StatusIcon, PriorityIcon, LabelIcon } from '@/components/atoms/icon';
 import { ButtonIssueProperty } from '@/components/atoms/button';
+import { ColorDot } from '@/components/atoms/color-dot';
 import { ISSUE_STATUSES } from '@/constants/issue-status';
 import { ISSUE_PRIORITIES } from '@/constants/issue-priority';
-import { IssuePropertySelect } from './issue-property-select';
-import { IssueLabelProperty } from './issue-label-property';
+import { LABELS } from '@/constants/issue-label';
+import { IssuePropertySelect } from '@/components/molecules/issue-property-select';
+import { IssuePropertyCheckbox } from '@/components/molecules/issue-property-checkbox';
+import type { IssueFields } from '@/schemas/issue.schema';
 
-export function IssueProperties() {
+function IssueProperties() {
+  const { control } = useFormContext<IssueFields>();
+  const { field: status } = useController({ control, name: 'status' });
+  const { field: priority } = useController({ control, name: 'priority' });
+  const { field: labels } = useController({ control, name: 'labels' });
+
   return (
     <div className="flex flex-wrap items-center gap-1.5 px-4 py-3">
       <IssuePropertySelect
-        name="status"
+        value={status.value ?? 'backlog'}
+        onValueChange={status.onChange}
         items={ISSUE_STATUSES}
-        defaultValue="backlog"
-        placeholder="Status"
         renderIcon={(item) => <StatusIcon status={item.id} className="size-4" />}
+        placeholder="Status"
       />
 
       <IssuePropertySelect
-        name="priority"
+        value={priority.value ?? 'no_priority'}
+        onValueChange={priority.onChange}
         items={ISSUE_PRIORITIES}
-        defaultValue="no_priority"
-        placeholder="Priority"
         renderIcon={(item) => <PriorityIcon priority={item.id} className="size-4" />}
+        placeholder="Priority"
       />
 
       <ButtonIssueProperty icon={<UserCircleIcon />}>Assignee</ButtonIssueProperty>
 
-      <IssueLabelProperty />
+      <IssuePropertyCheckbox
+        items={LABELS}
+        value={labels.value ?? []}
+        onValueChange={labels.onChange}
+        placeholder="Labels"
+        renderIcon={(label) => <ColorDot color={label.color} />}
+        renderTriggerIcon={(selected) =>
+          selected.length === 0 ? (
+            <LabelIcon />
+          ) : selected.length === 1 ? (
+            <ColorDot color={selected[0].color} />
+          ) : (
+            <div className="flex items-center -space-x-1">
+              {selected.map((label) => (
+                <ColorDot key={label.id} color={label.color} className="ring-background ring-1" />
+              ))}
+            </div>
+          )
+        }
+      />
     </div>
   );
 }
 
-export default IssueProperties;
+export { IssueProperties };

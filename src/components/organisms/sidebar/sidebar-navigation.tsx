@@ -6,7 +6,7 @@ export type SidebarNavigationProps = {
   className?: string;
 };
 
-export function SidebarNavigation({ items, className }: SidebarNavigationProps) {
+function SidebarNavigation({ items, className }: SidebarNavigationProps) {
   return (
     <nav className={cn('flex flex-col space-y-0.5', className)}>
       {items.map((item) => (
@@ -15,3 +15,5 @@ export function SidebarNavigation({ items, className }: SidebarNavigationProps) 
     </nav>
   );
 }
+
+export { SidebarNavigation };

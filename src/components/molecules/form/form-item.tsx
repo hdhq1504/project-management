@@ -50,4 +50,3 @@ const FormItem = <
 };
 
 export { FormItem };
-export default FormItem;

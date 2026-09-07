@@ -15,7 +15,7 @@ export type SidebarItemProps = {
   };
 };
 
-export function SidebarItem({ item }: SidebarItemProps) {
+function SidebarItem({ item }: SidebarItemProps) {
   const { label, href, icon, badge, children, defaultOpen } = item;
   const [isOpen, setIsOpen] = useState(defaultOpen ?? false);
   const hasChildren = Boolean(children && children.length > 0);
@@ -76,3 +76,5 @@ export function SidebarItem({ item }: SidebarItemProps) {
     </button>
   );
 }
+
+export { SidebarItem };

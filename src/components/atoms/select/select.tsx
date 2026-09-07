@@ -21,7 +21,7 @@ export type SelectProps<T> = {
   className?: string;
 };
 
-export function Select<T>({
+function Select<T>({
   items,
   value,
   getValue,
@@ -128,3 +128,5 @@ export function Select<T>({
     </div>
   );
 }
+
+export { Select };

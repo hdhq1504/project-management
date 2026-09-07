@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/atoms/button';
@@ -8,6 +8,7 @@ import { Form, FormItem } from '@/components/molecules/form';
 import { IssueModalHeader } from './issue-modal-header';
 import { IssueProperties } from './issue-properties';
 import { issueSchema, type IssueFields } from '@/schemas/issue.schema';
+import { useIssueModalStore } from '@/stores/issue-modal.store';
 
 export type IssueFormProps = {
   onClose?: () => void;
@@ -15,13 +16,26 @@ export type IssueFormProps = {
   isPending?: boolean;
 };
 
-export function IssueForm({ onClose, onSubmit, isPending = false }: IssueFormProps) {
+function IssueForm({ onClose, onSubmit, isPending = false }: IssueFormProps) {
+  const storeDefaults = useIssueModalStore((state) => state.defaultValues);
+
   const form = useForm<IssueFields>({
     resolver: zodResolver(issueSchema),
-    defaultValues: { title: '', description: '', status: 'backlog', priority: 'no_priority', labels: [] }
+    defaultValues: {
+      title: '',
+      description: '',
+      status: 'backlog',
+      priority: 'no_priority',
+      labels: [],
+      ...storeDefaults
+    }
   });
 
   const { reset } = form;
+
+  useEffect(() => {
+    reset({ title: '', description: '', status: 'backlog', priority: 'no_priority', labels: [], ...storeDefaults });
+  }, [storeDefaults, reset]);
 
   const handleClose = useCallback(() => {
     reset();
@@ -70,4 +84,4 @@ export function IssueForm({ onClose, onSubmit, isPending = false }: IssueFormPro
   );
 }
 
-export default IssueForm;
+export { IssueForm };

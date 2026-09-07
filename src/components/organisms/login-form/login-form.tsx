@@ -17,7 +17,7 @@ export type LoginFormProps = Omit<ComponentProps<'form'>, 'onSubmit'> & {
   errorMessage?: string;
 };
 
-export function LoginForm({ className, onSubmit, isPending = false, errorMessage, ...props }: LoginFormProps) {
+function LoginForm({ className, onSubmit, isPending = false, errorMessage, ...props }: LoginFormProps) {
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -62,3 +62,5 @@ export function LoginForm({ className, onSubmit, isPending = false, errorMessage
     </Form>
   );
 }
+
+export { LoginForm };

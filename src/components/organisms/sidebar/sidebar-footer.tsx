@@ -2,7 +2,7 @@ import { Button } from '@/components/atoms/button/button';
 import { useLogout } from '@/hooks/use-logout';
 import { LogOut } from 'lucide-react';
 
-export function SidebarFooter() {
+function SidebarFooter() {
   const { mutate, isPending } = useLogout();
 
   return (
@@ -15,4 +15,4 @@ export function SidebarFooter() {
   );
 }
 
-export default SidebarFooter;
+export { SidebarFooter };

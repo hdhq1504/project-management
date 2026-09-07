@@ -4,7 +4,7 @@ import { Eye, EyeOff } from 'lucide-react';
 
 import { Button } from '@/components/atoms/button/button';
 import { Input } from '@/components/atoms/input/input';
-import { PasswordInput } from '@/components/atoms/input/password-input';
+import { InputPassword } from '@/components/molecules/input-password';
 
 const meta: Meta<typeof Input> = {
   title: 'UI/Input',
@@ -66,7 +66,7 @@ export const Email: Story = {
 };
 
 export const Password: Story = {
-  render: () => <PasswordInput placeholder="Nhập mật khẩu..." />
+  render: () => <InputPassword placeholder="Nhập mật khẩu..." />
 };
 
 function ControlledPasswordExample() {
@@ -74,12 +74,22 @@ function ControlledPasswordExample() {
 
   return (
     <div className="flex gap-2">
-      <PasswordInput
+      <InputPassword
         placeholder="Mật khẩu controlled"
-        iconRender={(isVisible) =>
-          isVisible ? <Eye className="text-primary" aria-hidden="true" /> : <EyeOff aria-hidden="true" />
-        }
-        visibilityToggle={{ visible, onVisibleChange: setVisible }}
+        renderEndAddon={({ disabled }) => (
+          <button
+            type="button"
+            disabled={disabled}
+            onClick={() => setVisible((prev) => !prev)}
+            className="text-muted-foreground flex items-center justify-center p-1"
+          >
+            {visible ? (
+              <Eye className="text-primary size-4" aria-hidden="true" />
+            ) : (
+              <EyeOff className="size-4" aria-hidden="true" />
+            )}
+          </button>
+        )}
       />
       <Button type="button" variant="outline" onClick={() => setVisible((current) => !current)}>
         {visible ? 'Ẩn' : 'Hiện'}

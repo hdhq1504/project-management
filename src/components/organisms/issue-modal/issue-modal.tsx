@@ -4,7 +4,7 @@ import { IssueForm, type IssueFormProps } from './issue-form';
 
 export type IssueModalProps = Omit<IssueFormProps, 'onClose'>;
 
-export function IssueModal(props: IssueModalProps) {
+function IssueModal(props: IssueModalProps) {
   const isOpen = useIssueModalStore((state) => state.isOpen);
   const close = useIssueModalStore((state) => state.close);
 
@@ -15,4 +15,4 @@ export function IssueModal(props: IssueModalProps) {
   );
 }
 
-export default IssueModal;
+export { IssueModal };

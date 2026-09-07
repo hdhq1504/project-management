@@ -3,7 +3,7 @@ import { Button } from '@/components/atoms/button/button';
 import { EditIcon, SearchIcon } from '@/components/atoms/icon';
 import { useIssueModalStore } from '@/stores/issue-modal.store';
 
-export function SidebarHeader() {
+function SidebarHeader() {
   const openNewIssueModal = useIssueModalStore((state) => state.open);
 
   return (
@@ -27,7 +27,7 @@ export function SidebarHeader() {
 
       <div className="flex items-center gap-2">
         {/* New Issue Button */}
-        <Button variant="outline" className="flex flex-1 justify-start" onClick={openNewIssueModal}>
+        <Button variant="outline" className="flex flex-1 justify-start" onClick={() => openNewIssueModal()}>
           <EditIcon />
           New Issue
         </Button>
@@ -41,4 +41,4 @@ export function SidebarHeader() {
   );
 }
 
-export default SidebarHeader;
+export { SidebarHeader };

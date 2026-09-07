@@ -18,7 +18,9 @@ export type PriorityIconProps = IconProps & {
   priority?: IssuePriorityId;
 };
 
-export function PriorityIcon({ priority = 'no_priority', ...props }: PriorityIconProps) {
+function PriorityIcon({ priority = 'no_priority', ...props }: PriorityIconProps) {
   const PriorityIconComponent = PRIORITY_ICONS[priority];
   return <PriorityIconComponent {...props} />;
 }
+
+export { PriorityIcon };

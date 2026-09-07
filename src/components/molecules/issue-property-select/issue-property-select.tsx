@@ -1,11 +1,10 @@
 import { useState, type ReactNode } from 'react';
-import { useController, useFormContext } from 'react-hook-form';
 import { Select } from '@/components/atoms/select';
 import { CheckIcon } from '@/components/atoms/icon/check-icon';
 import { ButtonIssueProperty } from '@/components/atoms/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/molecules/popover';
-import type { IssueFields } from '@/schemas/issue.schema';
 
+// Fix #4: readonly properties — constants are immutable, component should not require mutable items
 type IssuePropertyItem = {
   readonly id: string;
   readonly name: string;
@@ -13,46 +12,46 @@ type IssuePropertyItem = {
 };
 
 type IssuePropertySelectProps<T extends IssuePropertyItem> = {
-  name: keyof Pick<IssueFields, 'status' | 'priority'>;
   items: readonly T[];
-  defaultValue: T['id'];
-  placeholder: string;
+  value: T['id'];
+  onValueChange: (value: T['id']) => void;
   renderIcon: (item: T) => ReactNode;
+  renderTrigger?: (item: T) => ReactNode;
+  placeholder?: string;
 };
 
-export function IssuePropertySelect<T extends IssuePropertyItem>({
-  name,
+function IssuePropertySelect<T extends IssuePropertyItem>({
   items,
-  defaultValue,
-  placeholder,
-  renderIcon
+  value,
+  onValueChange,
+  renderIcon,
+  renderTrigger,
+  placeholder
 }: IssuePropertySelectProps<T>) {
   const [open, setOpen] = useState(false);
-  const { control } = useFormContext<IssueFields>();
+  const currentItem = items.find((item) => item.id === value) ?? items[0];
+  if (!currentItem) return null;
 
-  const {
-    field: { value: rawValue, onChange }
-  } = useController({ control, name });
-
-  const currentValue = (rawValue as string | undefined) ?? defaultValue;
-  const currentItem = items.find((item) => item.id === currentValue) ?? items[0];
-  const label = currentValue === defaultValue ? placeholder : currentItem.name;
+  const label = currentItem.name ?? placeholder;
+  const trigger = renderTrigger ? (
+    renderTrigger(currentItem)
+  ) : (
+    <ButtonIssueProperty icon={renderIcon(currentItem)}>{label}</ButtonIssueProperty>
+  );
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <ButtonIssueProperty icon={renderIcon(currentItem)}>{label}</ButtonIssueProperty>
-      </PopoverTrigger>
+      <PopoverTrigger asChild>{trigger}</PopoverTrigger>
 
       <PopoverContent align="start" className="w-[230px] p-0 shadow-xl">
         <div className="flex w-[230px] flex-col p-1.5 select-none">
           <Select
             items={items}
-            value={currentValue}
+            value={value}
             getValue={(item) => item.id}
             getShortcut={(item) => item.shortcut}
             onValueChange={(item) => {
-              onChange(item.id);
+              onValueChange(item.id as T['id']);
               setOpen(false);
             }}
             className="gap-0.5"
@@ -72,3 +71,5 @@ export function IssuePropertySelect<T extends IssuePropertyItem>({
     </Popover>
   );
 }
+
+export { IssuePropertySelect };
