@@ -1,7 +1,5 @@
 import { create } from 'zustand';
 import type { Issue, CreateIssueInput, UpdateIssueInput } from '@/types/issue.types';
-import type { IssueStatusId } from '@/constants/issue-status';
-import type { IssuePriorityId } from '@/constants/issue-priority';
 
 type IssuesState = {
   issues: Issue[];
@@ -25,14 +23,14 @@ export const useIssuesStore = create<IssuesStore>()((set) => ({
       id: '',
       title: input.title,
       description: input.description,
-      status: (input.status as IssueStatusId) || 'backlog',
-      priority: (input.priority as IssuePriorityId) || 'no_priority',
+      status: input.status ?? 'backlog',
+      priority: input.priority ?? 'no_priority',
       labels: input.labels || [],
       createdAt: new Date().toISOString()
     };
 
     set((state) => {
-      const id = `QA - ${state.nextId}`;
+      const id = `QA-${state.nextId}`;
       createdIssue = { ...createdIssue, id };
       return {
         issues: [createdIssue, ...state.issues],

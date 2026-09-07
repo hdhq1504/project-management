@@ -1,10 +1,11 @@
 import { cn } from '@/libs/utils';
 
 export type TopbarProps = {
+  title: string;
   className?: string;
 };
 
-export function Topbar({ className }: TopbarProps) {
+function Topbar({ title, className }: TopbarProps) {
   return (
     <header
       className={cn(
@@ -13,11 +14,10 @@ export function Topbar({ className }: TopbarProps) {
       )}
     >
       <div className="flex items-center gap-3">
-        {/* TODO: Dùng Render Props */}
-        <h1 className="text-foreground text-base font-semibold tracking-tight">All Issues</h1>
+        <h1 className="text-foreground text-base font-semibold tracking-tight">{title}</h1>
       </div>
     </header>
   );
 }
 
-export default Topbar;
+export { Topbar };

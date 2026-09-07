@@ -16,7 +16,7 @@ export type IssueFormProps = {
   isPending?: boolean;
 };
 
-export function IssueForm({ onClose, onSubmit, isPending = false }: IssueFormProps) {
+function IssueForm({ onClose, onSubmit, isPending = false }: IssueFormProps) {
   const storeDefaults = useIssueModalStore((state) => state.defaultValues);
 
   const form = useForm<IssueFields>({
@@ -84,4 +84,4 @@ export function IssueForm({ onClose, onSubmit, isPending = false }: IssueFormPro
   );
 }
 
-export default IssueForm;
+export { IssueForm };

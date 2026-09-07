@@ -15,12 +15,12 @@ export type Issue = {
 export type CreateIssueInput = {
   title: string;
   description?: string;
-  status?: string;
-  priority?: string;
+  status?: IssueStatusId;
+  priority?: IssuePriorityId;
   labels?: string[];
 };
 
-export type UpdateIssueInput = Partial<Omit<Issue, 'id' | 'createdAt'>>;
+export type UpdateIssueInput = Partial<Omit<Issue, 'id' | 'createdAt' | 'updatedAt'>>;
 
 export type GroupedIssues = {
   status: IssueStatusId;

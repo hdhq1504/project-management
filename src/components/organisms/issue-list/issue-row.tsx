@@ -7,12 +7,13 @@ import { ISSUE_STATUSES } from '@/constants/issue-status';
 import { ISSUE_PRIORITIES } from '@/constants/issue-priority';
 import { StatusIcon } from '@/components/atoms/icon/status-icon';
 import { PriorityIcon } from '@/components/atoms/icon/priority-icon';
+import { LabelIcon } from '@/components/atoms/icon';
 import { UserCircleIcon } from '@/components/atoms/icon/user-circle-icon';
 import { ColorDot } from '@/components/atoms/color-dot';
 import { Checkbox } from '@/components/atoms/checkbox';
 import { Badge } from '@/components/atoms/badge';
-import { IssuePropertySelect } from '@/components/organisms/issue-modal/issue-property-select';
-import { IssuePropertyCheckbox } from '@/components/organisms/issue-modal/issue-property-checkbox';
+import { IssuePropertySelect } from '@/components/molecules/issue-property-select';
+import { IssuePropertyCheckbox } from '@/components/molecules/issue-property-checkbox';
 import { formatIssueDate } from '@/utils/issue.utils';
 import { cn } from '@/libs/utils';
 
@@ -24,12 +25,9 @@ export type IssueRowProps = {
   className?: string;
 };
 
-export function IssueRow({ issue, onStatusChange, onPriorityChange, onLabelsChange, className }: IssueRowProps) {
+function IssueRow({ issue, onStatusChange, onPriorityChange, onLabelsChange, className }: IssueRowProps) {
+  // TODO: Move selection state to list/page level when bulk actions are implemented.
   const [isChecked, setIsChecked] = useState(false);
-
-  const matchedLabels = (issue.labels || [])
-    .map((labelId) => LABELS.find((l) => l.id === labelId))
-    .filter((l): l is NonNullable<typeof l> => Boolean(l));
 
   return (
     <div
@@ -47,11 +45,10 @@ export function IssueRow({ issue, onStatusChange, onPriorityChange, onLabelsChan
         <Checkbox checked={isChecked} onChange={(e) => setIsChecked(e.target.checked)} />
       </div>
 
-      {/* Priority */}
       <IssuePropertySelect
         value={issue.priority}
         items={ISSUE_PRIORITIES}
-        onValueChange={(val) => onPriorityChange?.(val as IssuePriorityId)}
+        onValueChange={(val) => onPriorityChange?.(val)}
         renderIcon={(item) => <PriorityIcon priority={item.id} className="size-3.5" />}
         renderTrigger={(item) => (
           <button
@@ -66,11 +63,10 @@ export function IssueRow({ issue, onStatusChange, onPriorityChange, onLabelsChan
 
       <span className="text-muted-foreground/70 shrink-0 text-sm font-medium tracking-tight">{issue.id}</span>
 
-      {/* Status */}
       <IssuePropertySelect
         value={issue.status}
         items={ISSUE_STATUSES}
-        onValueChange={(val) => onStatusChange?.(val as IssueStatusId)}
+        onValueChange={(val) => onStatusChange?.(val)}
         renderIcon={(item) => <StatusIcon status={item.id} className="size-4" />}
         renderTrigger={(item) => (
           <button
@@ -89,15 +85,25 @@ export function IssueRow({ issue, onStatusChange, onPriorityChange, onLabelsChan
         </span>
       </div>
 
-      {/* Labels */}
-      {matchedLabels.length > 0 && (
-        <IssuePropertyCheckbox
-          items={LABELS}
-          value={issue.labels ?? []}
-          onValueChange={(newLabels) => onLabelsChange?.(newLabels)}
-          placeholder="Labels"
-          renderIcon={(label) => <ColorDot color={label.color} />}
-          renderTrigger={(selected) => (
+      <IssuePropertyCheckbox
+        items={LABELS}
+        value={issue.labels ?? []}
+        onValueChange={(newLabels) => onLabelsChange?.(newLabels)}
+        placeholder="Labels"
+        renderIcon={(label) => <ColorDot color={label.color} />}
+        renderTrigger={(selected) => {
+          if (selected.length === 0) {
+            return (
+              <button
+                type="button"
+                className="text-muted-foreground hover:bg-muted hover:text-foreground flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-xs opacity-0 transition-all group-hover:opacity-100"
+                aria-label="Add labels"
+              >
+                <LabelIcon className="size-3.5" />
+              </button>
+            );
+          }
+          return (
             <button
               type="button"
               className="inline-flex cursor-pointer items-center gap-1.5 transition-opacity hover:opacity-80"
@@ -110,9 +116,9 @@ export function IssueRow({ issue, onStatusChange, onPriorityChange, onLabelsChan
                 </Badge>
               ))}
             </button>
-          )}
-        />
-      )}
+          );
+        }}
+      />
 
       <div className="text-muted-foreground/60 flex size-4 shrink-0 items-center justify-center">
         <UserCircleIcon className="size-4" />
@@ -123,4 +129,4 @@ export function IssueRow({ issue, onStatusChange, onPriorityChange, onLabelsChan
   );
 }
 
-export default IssueRow;
+export { IssueRow };

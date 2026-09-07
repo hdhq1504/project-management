@@ -17,7 +17,7 @@ export type SignupFormProps = Omit<ComponentProps<'form'>, 'onSubmit'> & {
   errorMessage?: string;
 };
 
-export function SignupForm({ className, onSubmit, isPending = false, errorMessage, ...props }: SignupFormProps) {
+function SignupForm({ className, onSubmit, isPending = false, errorMessage, ...props }: SignupFormProps) {
   const form = useForm<SignupFormValues>({
     resolver: zodResolver(signupSchema),
     defaultValues: {
@@ -72,3 +72,5 @@ export function SignupForm({ className, onSubmit, isPending = false, errorMessag
     </Form>
   );
 }
+
+export { SignupForm };

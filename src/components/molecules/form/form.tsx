@@ -31,4 +31,3 @@ function Form<TFieldValues extends FieldValues, TContext = unknown, TTransformed
 }
 
 export { Form };
-export default Form;

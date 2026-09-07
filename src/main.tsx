@@ -4,7 +4,7 @@ import './styles/index.css';
 
 import { BrowserRouter } from 'react-router';
 import { QueryClientProvider } from '@tanstack/react-query';
-import ErrorBoundary from '@/components/templates/error-boundary.tsx';
+import { ErrorBoundary } from '@/components/templates/error-boundary';
 import App from '@/App';
 import { AuthProvider } from '@/providers/auth-provider';
 import { queryClient } from '@/libs/query-client';

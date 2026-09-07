@@ -75,7 +75,7 @@ function CheckboxGroupItem({
     <Label
       data-disabled={isDisabled || undefined}
       className={cn(
-        'group/item flex min-h-8 w-full cursor-pointer items-center gap-2.5 rounded-lg px-2.5 py-1.5 transition-colors select-none font-normal',
+        'group/item flex min-h-8 w-full cursor-pointer items-center gap-2.5 rounded-lg px-2.5 py-1.5 font-normal transition-colors select-none',
         'focus-within:bg-muted hover:bg-muted',
         'data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50',
         className

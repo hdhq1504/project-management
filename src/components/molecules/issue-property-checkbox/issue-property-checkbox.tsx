@@ -19,7 +19,7 @@ type IssuePropertyCheckboxProps<T extends CheckboxItem> = {
   placeholder?: string;
 };
 
-export function IssuePropertyCheckbox<T extends CheckboxItem>({
+function IssuePropertyCheckbox<T extends CheckboxItem>({
   items,
   value,
   onValueChange,
@@ -81,3 +81,5 @@ export function IssuePropertyCheckbox<T extends CheckboxItem>({
     </Popover>
   );
 }
+
+export { IssuePropertyCheckbox };

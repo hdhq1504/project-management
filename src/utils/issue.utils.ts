@@ -1,4 +1,4 @@
-import { ISSUE_STATUSES, type IssueStatusId } from '@/constants/issue-status';
+import { ISSUE_STATUSES } from '@/constants/issue-status';
 import type { Issue, GroupedIssues } from '@/types/issue.types';
 
 /**
@@ -9,7 +9,7 @@ export function groupIssuesByStatus(issues: Issue[]): GroupedIssues[] {
   return ISSUE_STATUSES.map((status) => {
     const matchedIssues = issues.filter((issue) => issue.status === status.id);
     return {
-      status: status.id as IssueStatusId,
+      status: status.id,
       name: status.name,
       issues: matchedIssues
     };

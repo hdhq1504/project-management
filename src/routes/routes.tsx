@@ -3,6 +3,7 @@ import { Navigate, Outlet, type RouteObject } from 'react-router';
 import path from '@/constants/path';
 import { AppLayout } from '@/components/templates/app-layout';
 import { AuthLayout } from '@/components/templates/auth-layout';
+import { Topbar } from '@/components/organisms/topbar';
 import { ProtectedRoute, PublicRoute } from '@/routes/guards';
 
 const Login = lazy(() => import('@/pages/login'));
@@ -20,7 +21,7 @@ export const routes: RouteObject[] = [
       },
       {
         element: (
-          <AppLayout>
+          <AppLayout topbar={<Topbar title="All Issues" />}>
             <Outlet />
           </AppLayout>
         ),

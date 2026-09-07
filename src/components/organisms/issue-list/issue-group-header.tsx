@@ -8,15 +8,14 @@ export type IssueGroupHeaderProps = {
   name: string;
   count: number;
   isOpen?: boolean;
-  onAddClick?: () => void;
   className?: string;
 };
 
-export function IssueGroupHeader({ status, name, count, isOpen, onAddClick, className }: IssueGroupHeaderProps) {
+function IssueGroupHeader({ status, name, count, isOpen, className }: IssueGroupHeaderProps) {
   return (
     <div
       className={cn(
-        'group/header border-border/60 sticky top-0 z-10 flex h-9 cursor-pointer items-center gap-2 border-b bg-[#21232E] px-4 font-medium backdrop-blur-xs transition-colors select-none',
+        'group/header border-border/60 flex h-9 items-center gap-2 px-4 font-medium select-none',
         className
       )}
     >
@@ -37,27 +36,8 @@ export function IssueGroupHeader({ status, name, count, isOpen, onAddClick, clas
         <span className="text-foreground text-sm font-semibold tracking-tight">{name}</span>
         <span className="text-muted-foreground text-xs font-medium">{count}</span>
       </div>
-
-      <div
-        role="button"
-        tabIndex={0}
-        onClick={(e) => {
-          e.stopPropagation();
-          onAddClick?.();
-        }}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.stopPropagation();
-            onAddClick?.();
-          }
-        }}
-        className="text-muted-foreground hover:bg-muted hover:text-foreground flex size-6 cursor-pointer items-center justify-center rounded-sm text-base transition-colors"
-        aria-label={`Add issue to ${name}`}
-      >
-        +
-      </div>
     </div>
   );
 }
 
-export default IssueGroupHeader;
+export { IssueGroupHeader };

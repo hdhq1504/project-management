@@ -6,7 +6,7 @@ export type IssueModalHeaderProps = {
   onClose?: () => void;
 };
 
-export function IssueModalHeader({ onClose }: IssueModalHeaderProps) {
+function IssueModalHeader({ onClose }: IssueModalHeaderProps) {
   return (
     <>
       <div id="new-issue-title" className="text-muted-foreground flex items-center gap-1.5 text-xs">
@@ -44,4 +44,4 @@ export function IssueModalHeader({ onClose }: IssueModalHeaderProps) {
   );
 }
 
-export default IssueModalHeader;
+export { IssueModalHeader };

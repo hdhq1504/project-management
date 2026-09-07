@@ -1,14 +1,14 @@
 import { AppSidebar } from '@/components/organisms/sidebar';
-import { Topbar } from '@/components/organisms/topbar';
 import { IssueModal } from '@/components/organisms/issue-modal';
 import { useIssuesStore } from '@/stores/issues.store';
 import type { ReactNode } from 'react';
 
 type AppLayoutProps = {
   children: ReactNode;
+  topbar?: ReactNode;
 };
 
-function AppLayout({ children }: AppLayoutProps) {
+function AppLayout({ children, topbar }: AppLayoutProps) {
   const addIssue = useIssuesStore((state) => state.addIssue);
 
   return (
@@ -18,7 +18,7 @@ function AppLayout({ children }: AppLayoutProps) {
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <Topbar />
+        {topbar}
         <main className="flex-1 overflow-y-auto">{children}</main>
       </div>
 

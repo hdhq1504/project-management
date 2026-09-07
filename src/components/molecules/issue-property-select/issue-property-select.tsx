@@ -4,10 +4,11 @@ import { CheckIcon } from '@/components/atoms/icon/check-icon';
 import { ButtonIssueProperty } from '@/components/atoms/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/molecules/popover';
 
+// Fix #4: readonly properties — constants are immutable, component should not require mutable items
 type IssuePropertyItem = {
-  id: string;
-  name: string;
-  shortcut: string;
+  readonly id: string;
+  readonly name: string;
+  readonly shortcut: string;
 };
 
 type IssuePropertySelectProps<T extends IssuePropertyItem> = {
@@ -19,7 +20,7 @@ type IssuePropertySelectProps<T extends IssuePropertyItem> = {
   placeholder?: string;
 };
 
-export function IssuePropertySelect<T extends IssuePropertyItem>({
+function IssuePropertySelect<T extends IssuePropertyItem>({
   items,
   value,
   onValueChange,
@@ -29,7 +30,9 @@ export function IssuePropertySelect<T extends IssuePropertyItem>({
 }: IssuePropertySelectProps<T>) {
   const [open, setOpen] = useState(false);
   const currentItem = items.find((item) => item.id === value) ?? items[0];
-  const label = currentItem?.name ?? placeholder;
+  if (!currentItem) return null;
+
+  const label = currentItem.name ?? placeholder;
   const trigger = renderTrigger ? (
     renderTrigger(currentItem)
   ) : (
@@ -68,3 +71,5 @@ export function IssuePropertySelect<T extends IssuePropertyItem>({
     </Popover>
   );
 }
+
+export { IssuePropertySelect };
