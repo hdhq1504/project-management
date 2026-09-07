@@ -29,3 +29,11 @@ export function formatIssueDate(dateString: string): string {
     day: 'numeric'
   });
 }
+
+/**
+ * Extract initial character from a user's name for avatar rendering
+ */
+export function getInitials(name: string): string {
+  if (!name) return '';
+  return name.trim().charAt(0).toUpperCase();
+}

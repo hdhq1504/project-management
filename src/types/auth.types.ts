@@ -1,6 +1,7 @@
-import type { Database } from '@/types/database.types';
+import type { User } from '@/types/user.types';
 
-export type UserProfile = Database['public']['Tables']['users']['Row'];
+export type UserProfile = User;
+export type { User };
 
 export type LoginParams = {
   email: string;

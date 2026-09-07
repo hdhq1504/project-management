@@ -1,4 +1,4 @@
-import { Avatar, AvatarBadge, AvatarFallback, AvatarImage } from '@/components/atoms/avatar/avatar';
+import { Avatar, AvatarBadge } from '@/components/atoms/avatar';
 import { Button } from '@/components/atoms/button/button';
 import { EditIcon, SearchIcon } from '@/components/atoms/icon';
 import { useIssueModalStore } from '@/stores/issue-modal.store';
@@ -17,9 +17,7 @@ function SidebarHeader() {
 
         {/* Avatar */}
         <Button variant="ghost" size="icon">
-          <Avatar size="sm">
-            <AvatarImage src="" />
-            <AvatarFallback>CN</AvatarFallback>
+          <Avatar size="sm" fallback="CN">
             <AvatarBadge className="bg-decoration-green" />
           </Avatar>
         </Button>

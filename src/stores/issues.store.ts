@@ -26,6 +26,7 @@ export const useIssuesStore = create<IssuesStore>()((set) => ({
       status: input.status ?? 'backlog',
       priority: input.priority ?? 'no_priority',
       labels: input.labels || [],
+      assigneeId: input.assigneeId ?? null,
       createdAt: new Date().toISOString()
     };
 

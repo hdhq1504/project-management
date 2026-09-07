@@ -1,12 +1,13 @@
 import { useController, useFormContext } from 'react-hook-form';
 import { UserCircleIcon, StatusIcon, PriorityIcon, LabelIcon } from '@/components/atoms/icon';
-import { ButtonIssueProperty } from '@/components/atoms/button';
 import { ColorDot } from '@/components/atoms/color-dot';
+import { Avatar } from '@/components/atoms/avatar';
 import { ISSUE_STATUSES } from '@/constants/issue-status';
 import { ISSUE_PRIORITIES } from '@/constants/issue-priority';
 import { LABELS } from '@/constants/issue-label';
 import { IssuePropertySelect } from '@/components/molecules/issue-property-select';
 import { IssuePropertyCheckbox } from '@/components/molecules/issue-property-checkbox';
+import { ASSIGNEES } from '@/mocks/assignees';
 import type { IssueFields } from '@/schemas/issue.schema';
 
 function IssueProperties() {
@@ -14,6 +15,7 @@ function IssueProperties() {
   const { field: status } = useController({ control, name: 'status' });
   const { field: priority } = useController({ control, name: 'priority' });
   const { field: labels } = useController({ control, name: 'labels' });
+  const { field: assignee } = useController({ control, name: 'assigneeId' });
 
   return (
     <div className="flex flex-wrap items-center gap-1.5 px-4 py-3">
@@ -33,7 +35,15 @@ function IssueProperties() {
         placeholder="Priority"
       />
 
-      <ButtonIssueProperty icon={<UserCircleIcon />}>Assignee</ButtonIssueProperty>
+      <IssuePropertySelect
+        value={assignee.value}
+        onValueChange={assignee.onChange}
+        items={ASSIGNEES}
+        onClear={() => assignee.onChange(null)}
+        renderIcon={(item) => <Avatar size="xs" name={item.name} src={item.avatarUrl} />}
+        placeholder="Assignee"
+        fallbackIcon={<UserCircleIcon className="size-4" />}
+      />
 
       <IssuePropertyCheckbox
         items={LABELS}
