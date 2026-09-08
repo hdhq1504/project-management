@@ -1,19 +1,19 @@
 # Database Design Document - Project Management System
 
-Tài liệu thiết kế Cơ sở Dữ liệu (Relational Database Schema) cho Hệ thống Quản lý Dự án (Project Management Application - tương tự Jira/Linear/ClickUp).
+Tài liệu thiết kế Cơ sở Dữ liệu (Relational Database Schema) cho Hệ thống Quản lý Dự án.
 
 ---
 
 ## 1. Tổng quan Đơn vị Thực thể (Core Entities)
 
-1. **User & Auth**: Quản lý tài khoản, vai trò và phân quyền.
+1. **User & Auth**: Quản lý tài khoản, liên kết chặt chẽ với Supabase `auth.users`.
 2. **Workspace**: Không gian làm việc chung của tổ chức/công ty.
-3. **Project & Member**: Các dự án thuộc Workspace và danh sách thành viên tham gia.
-4. **Sprint / Milestone**: Quản lý các chu kỳ sprint (Scrum/Agile) hoặc mốc dự án.
-5. **Task & Subtask**: Công việc, phân loại, trạng thái, mức độ ưu tiên và người thực hiện.
-6. **Task Status & Label**: Trạng thái tùy chỉnh theo dự án (Custom Workflow) và nhãn phân loại.
-7. **Comment & Attachment**: Thảo luận chuỗi (Threaded comments) và tệp đính kèm.
-8. **Activity Log & Time Tracking**: Ghi vết lịch sử thay đổi (Audit trail) và thời gian gian làm việc (Time log).
+3. **Project & Member**: Các dự án thuộc Workspace, thành viên tham gia và project counter `next_issue_number`.
+4. **Sprint / Milestone**: Quản lý các chu kỳ sprint (Scrum/Agile).
+5. **Issue & Subtask**: Đơn vị công việc trung tâm (thay thế cho `tasks`), sử dụng status và priority dạng literal string.
+6. **Label & Issue Label**: Nhãn phân loại cấp workspace và bảng quan hệ nhiều-nhiều `issue_labels`.
+7. **Comment**: Thảo luận chuỗi liên kết trực tiếp với `issues`.
+8. **Private Schema & Security**: Các helper authorization nội bộ và RPC transaction-safe `create_issue`.
 
 ---
 
@@ -23,7 +23,7 @@ Tài liệu thiết kế Cơ sở Dữ liệu (Relational Database Schema) cho H
 erDiagram
     users ||--o{ workspace_members : "belongs to"
     users ||--o{ project_members : "participates in"
-    users ||--o{ tasks : "reporters / assignees"
+    users ||--o{ issues : "reporters / assignees"
     users ||--o{ comments : "writes"
 
     workspaces ||--o{ workspace_members : "has"
@@ -32,162 +32,126 @@ erDiagram
 
     projects ||--o{ project_members : "has"
     projects ||--o{ sprints : "organizes"
-    projects ||--o{ task_statuses : "defines workflow"
-    projects ||--o{ tasks : "contains"
+    projects ||--o{ issues : "contains"
 
-    sprints ||--o{ tasks : "groups"
+    sprints ||--o{ issues : "groups"
 
-    task_statuses ||--o{ tasks : "determines status"
-
-    tasks ||--o{ tasks : "subtask parent"
-    tasks ||--o{ task_labels : "has"
-    labels ||--o{ task_labels : "assigned to"
-    tasks ||--o{ comments : "has"
-    tasks ||--o{ attachments : "has"
-    tasks ||--o{ time_logs : "tracks"
-    tasks ||--o{ activity_logs : "records"
+    issues ||--o{ issues : "subtask parent"
+    issues ||--o{ issue_labels : "has"
+    labels ||--o{ issue_labels : "assigned to"
+    issues ||--o{ comments : "has"
 ```
 
 ---
 
-## 3. Thiết kế Chi tiết Chi tiết Các Bảng (Data Dictionary)
+## 3. Thiết kế Chi tiết Các Bảng (Data Dictionary)
 
 ### 3.1. Phân hệ Người dùng & Workspace
 
 #### Bảng `users`
 
-Lưu trữ thông tin người dùng trong hệ thống.
+Được tự động đồng bộ từ `auth.users` qua trigger `handle_new_auth_user()`.
 
-| Tên Cột         | Kiểu Dữ Liệu   | Ràng Buộc                                | Mô Tả                             |
-| :-------------- | :------------- | :--------------------------------------- | :-------------------------------- |
-| `id`            | `UUID`         | `PRIMARY KEY, DEFAULT gen_random_uuid()` | Định danh người dùng              |
-| `email`         | `VARCHAR(255)` | `NOT NULL, UNIQUE`                       | Địa chỉ email đăng nhập           |
-| `password_hash` | `VARCHAR(255)` | `NOT NULL`                               | Mật khẩu mã hóa (Bcrypt/Argon2)   |
-| `full_name`     | `VARCHAR(100)` | `NOT NULL`                               | Họ và tên hiển thị                |
-| `avatar_url`    | `TEXT`         | `NULL`                                   | Đường dẫn ảnh đại diện            |
-| `timezone`      | `VARCHAR(50)`  | `DEFAULT 'UTC'`                          | Múi giờ người dùng                |
-| `status`        | `VARCHAR(20)`  | `DEFAULT 'ACTIVE'`                       | `ACTIVE`, `INACTIVE`, `SUSPENDED` |
-| `created_at`    | `TIMESTAMPTZ`  | `NOT NULL, DEFAULT NOW()`                | Thời điểm tạo                     |
-| `updated_at`    | `TIMESTAMPTZ`  | `NOT NULL, DEFAULT NOW()`                | Thời điểm cập nhật cuối           |
+| Tên Cột | Kiểu Dữ Liệu | Ràng Buộc | Mô Tả |
+| :--- | :--- | :--- | :--- |
+| `id` | `UUID` | `PRIMARY KEY, REFERENCES auth.users(id) ON DELETE CASCADE` | Định danh người dùng |
+| `username` | `VARCHAR(100)` | `NOT NULL` | Tên người dùng hiển thị |
+| `avatar_url` | `TEXT` | `NULL` | Đường dẫn ảnh đại diện |
+| `status` | `VARCHAR(20)` | `NOT NULL DEFAULT 'ACTIVE'` | `ACTIVE`, `INACTIVE`, `SUSPENDED` |
+| `created_at` | `TIMESTAMPTZ` | `NOT NULL, DEFAULT NOW()` | Thời điểm tạo |
+| `updated_at` | `TIMESTAMPTZ` | `NOT NULL, DEFAULT NOW()` | Thời điểm cập nhật |
 
 #### Bảng `workspaces`
 
 Không gian làm việc riêng rẽ cho mỗi công ty / tổ chức.
 
-| Tên Cột      | Kiểu Dữ Liệu   | Ràng Buộc                                | Mô Tả                         |
-| :----------- | :------------- | :--------------------------------------- | :---------------------------- |
-| `id`         | `UUID`         | `PRIMARY KEY, DEFAULT gen_random_uuid()` | Định danh workspace           |
-| `name`       | `VARCHAR(100)` | `NOT NULL`                               | Tên workspace                 |
-| `slug`       | `VARCHAR(100)` | `NOT NULL, UNIQUE`                       | Đường dẫn URL slug (`my-org`) |
-| `logo_url`   | `TEXT`         | `NULL`                                   | Logo của workspace            |
-| `owner_id`   | `UUID`         | `NOT NULL, REFERENCES users(id)`         | Người sở hữu workspace        |
-| `created_at` | `TIMESTAMPTZ`  | `NOT NULL, DEFAULT NOW()`                | Thời điểm tạo                 |
-| `updated_at` | `TIMESTAMPTZ`  | `NOT NULL, DEFAULT NOW()`                | Thời điểm cập nhật            |
+| Tên Cột | Kiểu Dữ Liệu | Ràng Buộc | Mô Tả |
+| :--- | :--- | :--- | :--- |
+| `id` | `UUID` | `PRIMARY KEY, DEFAULT gen_random_uuid()` | Định danh workspace |
+| `name` | `VARCHAR(100)` | `NOT NULL` | Tên workspace |
+| `slug` | `VARCHAR(100)` | `NOT NULL, UNIQUE` | Slug URL duy nhất |
+| `logo_url` | `TEXT` | `NULL` | Logo workspace |
+| `owner_id` | `UUID` | `NOT NULL, REFERENCES users(id)` | Người sở hữu workspace |
+| `created_at` | `TIMESTAMPTZ` | `NOT NULL, DEFAULT NOW()` | Thời điểm tạo |
+| `updated_at` | `TIMESTAMPTZ` | `NOT NULL, DEFAULT NOW()` | Thời điểm cập nhật |
 
 #### Bảng `workspace_members`
 
 Phân quyền người dùng trong Workspace.
 
-| Tên Cột        | Kiểu Dữ Liệu              | Ràng Buộc                                               | Mô Tả                               |
-| :------------- | :------------------------ | :------------------------------------------------------ | :---------------------------------- |
-| `workspace_id` | `UUID`                    | `NOT NULL, REFERENCES workspaces(id) ON DELETE CASCADE` | ID workspace                        |
-| `user_id`      | `UUID`                    | `NOT NULL, REFERENCES users(id) ON DELETE CASCADE`      | ID người dùng                       |
-| `role`         | `VARCHAR(20)`             | `NOT NULL, DEFAULT 'MEMBER'`                            | `OWNER`, `ADMIN`, `MEMBER`, `GUEST` |
-| `joined_at`    | `TIMESTAMPTZ`             | `NOT NULL, DEFAULT NOW()`                               | Ngày tham gia                       |
-| `PRIMARY KEY`  | `(workspace_id, user_id)` |                                                         | Khóa chính phức hợp                 |
+| Tên Cột | Kiểu Dữ Liệu | Ràng Buộc | Mô Tả |
+| :--- | :--- | :--- | :--- |
+| `workspace_id` | `UUID` | `NOT NULL, REFERENCES workspaces(id) ON DELETE CASCADE` | ID workspace |
+| `user_id` | `UUID` | `NOT NULL, REFERENCES users(id) ON DELETE CASCADE` | ID người dùng |
+| `role` | `VARCHAR(20)` | `NOT NULL, DEFAULT 'MEMBER' CHECK (role IN ('OWNER', 'ADMIN', 'MEMBER'))` | Vai trò trong workspace |
+| `joined_at` | `TIMESTAMPTZ` | `NOT NULL, DEFAULT NOW()` | Ngày tham gia |
+| `PRIMARY KEY` | `(workspace_id, user_id)` | | Khóa chính phức hợp |
 
 ---
 
-### 3.2. Phân hệ Dự án & Sprint
+### 3.2. Phân hệ Dự án & Thành viên
 
 #### Bảng `projects`
 
-Danh sách dự án trong Workspace.
+Danh sách dự án trong Workspace, quản lý counter issue tự tăng cấp dự án.
 
-| Tên Cột        | Kiểu Dữ Liệu          | Ràng Buộc                                               | Mô Tả                                                    |
-| :------------- | :-------------------- | :------------------------------------------------------ | :------------------------------------------------------- |
-| `id`           | `UUID`                | `PRIMARY KEY, DEFAULT gen_random_uuid()`                | Định danh dự án                                          |
-| `workspace_id` | `UUID`                | `NOT NULL, REFERENCES workspaces(id) ON DELETE CASCADE` | Thuộc Workspace nào                                      |
-| `key`          | `VARCHAR(10)`         | `NOT NULL`                                              | Mã viết tắt tiền tố task (VD: `PRJ`, `CORE`)             |
-| `name`         | `VARCHAR(150)`        | `NOT NULL`                                              | Tên dự án                                                |
-| `description`  | `TEXT`                | `NULL`                                                  | Mô tả chi tiết dự án                                     |
-| `lead_id`      | `UUID`                | `NULL, REFERENCES users(id)`                            | Trưởng dự án (Project Lead)                              |
-| `status`       | `VARCHAR(20)`         | `DEFAULT 'ACTIVE'`                                      | `PLANNING`, `ACTIVE`, `ON_HOLD`, `COMPLETED`, `ARCHIVED` |
-| `created_at`   | `TIMESTAMPTZ`         | `NOT NULL, DEFAULT NOW()`                               | Thời điểm tạo                                            |
-| `updated_at`   | `TIMESTAMPTZ`         | `NOT NULL, DEFAULT NOW()`                               | Thời điểm cập nhật                                       |
-| `UNIQUE`       | `(workspace_id, key)` |                                                         | Mã `key` không trùng trong cùng 1 workspace              |
+| Tên Cột | Kiểu Dữ Liệu | Ràng Buộc | Mô Tả |
+| :--- | :--- | :--- | :--- |
+| `id` | `UUID` | `PRIMARY KEY, DEFAULT gen_random_uuid()` | Định danh dự án |
+| `workspace_id` | `UUID` | `NOT NULL, REFERENCES workspaces(id) ON DELETE CASCADE` | Thuộc Workspace nào |
+| `key` | `VARCHAR(10)` | `NOT NULL` | Mã tiền tố issue (VD: `QUA`, `CORE`) |
+| `name` | `VARCHAR(150)` | `NOT NULL` | Tên dự án |
+| `description` | `TEXT` | `NULL` | Mô tả dự án |
+| `lead_id` | `UUID` | `NULL, REFERENCES users(id) ON DELETE SET NULL` | Project Lead |
+| `status` | `VARCHAR(20)` | `NOT NULL DEFAULT 'ACTIVE' CHECK (status IN ('PLANNING', 'ACTIVE', 'ON_HOLD', 'COMPLETED', 'ARCHIVED'))` | Trạng thái dự án |
+| `next_issue_number` | `INTEGER` | `NOT NULL DEFAULT 1` | Counter cấp phát số thứ tự issue tiếp theo |
+| `created_at` | `TIMESTAMPTZ` | `NOT NULL, DEFAULT NOW()` | Thời điểm tạo |
+| `updated_at` | `TIMESTAMPTZ` | `NOT NULL, DEFAULT NOW()` | Thời điểm cập nhật |
+| `UNIQUE` | `(workspace_id, key)` | | Khóa duy nhất theo workspace |
 
 #### Bảng `project_members`
 
 Thành viên trực thuộc từng dự án.
 
-| Tên Cột       | Kiểu Dữ Liệu            | Ràng Buộc                                             | Mô Tả                                 |
-| :------------ | :---------------------- | :---------------------------------------------------- | :------------------------------------ |
-| `project_id`  | `UUID`                  | `NOT NULL, REFERENCES projects(id) ON DELETE CASCADE` | ID dự án                              |
-| `user_id`     | `UUID`                  | `NOT NULL, REFERENCES users(id) ON DELETE CASCADE`    | ID người dùng                         |
-| `role`        | `VARCHAR(20)`           | `NOT NULL, DEFAULT 'DEVELOPER'`                       | `PROJECT_LEAD`, `DEVELOPER`, `VIEWER` |
-| `PRIMARY KEY` | `(project_id, user_id)` |                                                       | Khóa chính phức hợp                   |
-
-#### Bảng `sprints`
-
-Các đợt Sprint theo mô hình Agile / Scrum.
-
-| Tên Cột      | Kiểu Dữ Liệu   | Ràng Buộc                                             | Mô Tả                            |
-| :----------- | :------------- | :---------------------------------------------------- | :------------------------------- |
-| `id`         | `UUID`         | `PRIMARY KEY, DEFAULT gen_random_uuid()`              | ID Sprint                        |
-| `project_id` | `UUID`         | `NOT NULL, REFERENCES projects(id) ON DELETE CASCADE` | ID dự án                         |
-| `name`       | `VARCHAR(100)` | `NOT NULL`                                            | Tên Sprint (VD: `Sprint 1`)      |
-| `goal`       | `TEXT`         | `NULL`                                                | Mục tiêu của Sprint              |
-| `start_date` | `TIMESTAMPTZ`  | `NULL`                                                | Ngày bắt đầu dự kiến             |
-| `end_date`   | `TIMESTAMPTZ`  | `NULL`                                                | Ngày kết thúc dự kiến            |
-| `status`     | `VARCHAR(20)`  | `DEFAULT 'PLANNED'`                                   | `PLANNED`, `ACTIVE`, `COMPLETED` |
-| `created_at` | `TIMESTAMPTZ`  | `NOT NULL, DEFAULT NOW()`                             | Thời điểm tạo                    |
+| Tên Cột | Kiểu Dữ Liệu | Ràng Buộc | Mô Tả |
+| :--- | :--- | :--- | :--- |
+| `project_id` | `UUID` | `NOT NULL, REFERENCES projects(id) ON DELETE CASCADE` | ID dự án |
+| `user_id` | `UUID` | `NOT NULL, REFERENCES users(id) ON DELETE CASCADE` | ID người dùng |
+| `role` | `VARCHAR(20)` | `NOT NULL, DEFAULT 'MEMBER' CHECK (role IN ('LEAD', 'MEMBER'))` | Vai trò trong dự án |
+| `joined_at` | `TIMESTAMPTZ` | `NOT NULL, DEFAULT NOW()` | Ngày tham gia |
+| `PRIMARY KEY` | `(project_id, user_id)` | | Khóa chính phức hợp |
 
 ---
 
-### 3.3. Phân hệ Workflow & Task (Công việc)
+### 3.3. Phân hệ Issues & Labels
 
-#### Bảng `task_statuses`
+#### Bảng `issues`
 
-Trạng thái cột công việc (Custom Workflow cho từng dự án).
+Bảng cốt lõi quản lý công việc (thay thế cho `tasks`).
 
-| Tên Cột      | Kiểu Dữ Liệu  | Ràng Buộc                                             | Mô Tả                                          |
-| :----------- | :------------ | :---------------------------------------------------- | :--------------------------------------------- |
-| `id`         | `UUID`        | `PRIMARY KEY, DEFAULT gen_random_uuid()`              | ID trạng thái                                  |
-| `project_id` | `UUID`        | `NOT NULL, REFERENCES projects(id) ON DELETE CASCADE` | ID dự án                                       |
-| `name`       | `VARCHAR(50)` | `NOT NULL`                                            | Tên cột (VD: `Backlog`, `In Progress`, `Done`) |
-| `category`   | `VARCHAR(20)` | `NOT NULL`                                            | `TODO`, `IN_PROGRESS`, `DONE`, `CANCELLED`     |
-| `position`   | `INT`         | `NOT NULL, DEFAULT 0`                                 | Thứ tự hiển thị trên Kanban board              |
-| `color`      | `VARCHAR(20)` | `DEFAULT '#6B7280'`                                   | Mã màu hiển thị                                |
+| Tên Cột | Kiểu Dữ Liệu | Ràng Buộc | Mô Tả |
+| :--- | :--- | :--- | :--- |
+| `id` | `UUID` | `PRIMARY KEY, DEFAULT gen_random_uuid()` | Định danh UUID của Issue |
+| `project_id` | `UUID` | `NOT NULL, REFERENCES projects(id) ON DELETE CASCADE` | Thuộc dự án nào |
+| `sprint_id` | `UUID` | `NULL, REFERENCES sprints(id) ON DELETE SET NULL` | Thuộc Sprint nào |
+| `parent_id` | `UUID` | `NULL, REFERENCES issues(id) ON DELETE CASCADE` | Issue cha (cho sub-issue) |
+| `issue_number` | `INT` | `NOT NULL` | Số thứ tự trong dự án (VD: 12 -> `QUA-12`) |
+| `title` | `VARCHAR(255)` | `NOT NULL` | Tiêu đề issue |
+| `description` | `TEXT` | `NULL` | Nội dung mô tả chi tiết |
+| `status` | `VARCHAR(20)` | `NOT NULL DEFAULT 'backlog' CHECK (status IN ('backlog', 'todo', 'in_progress', 'done', 'canceled'))` | Trạng thái cố định |
+| `priority` | `VARCHAR(20)` | `NOT NULL DEFAULT 'no_priority' CHECK (priority IN ('no_priority', 'urgent', 'high', 'medium', 'low'))` | Mức độ ưu tiên |
+| `reporter_id` | `UUID` | `NOT NULL, REFERENCES users(id) ON DELETE RESTRICT` | Người tạo issue (gán từ `auth.uid()`) |
+| `assignee_id` | `UUID` | `NULL, REFERENCES users(id) ON DELETE SET NULL` | Người được giao việc |
+| `due_date` | `TIMESTAMPTZ` | `NULL` | Hạn hoàn thành |
+| `position` | `DOUBLE PRECISION` | `NOT NULL DEFAULT 0` | Thứ tự kéo thả |
+| `created_at` | `TIMESTAMPTZ` | `NOT NULL DEFAULT NOW()` | Thời điểm tạo |
+| `updated_at` | `TIMESTAMPTZ` | `NOT NULL DEFAULT NOW()` | Thời điểm cập nhật |
+| `deleted_at` | `TIMESTAMPTZ` | `NULL` | Thời điểm xóa mềm (Soft Delete) |
+| `UNIQUE` | `(project_id, issue_number)` | | Đảm bảo định danh duy nhất theo dự án |
 
-#### Bảng `tasks`
+#### Bảng `labels` & `issue_labels`
 
-Bảng cốt lõi lưu trữ mọi công việc / issue / subtask.
-
-| Tên Cột          | Kiểu Dữ Liệu                | Ràng Buộc                                             | Mô Tả                                                |
-| :--------------- | :-------------------------- | :---------------------------------------------------- | :--------------------------------------------------- |
-| `id`             | `UUID`                      | `PRIMARY KEY, DEFAULT gen_random_uuid()`              | ID duy nhất của Task                                 |
-| `project_id`     | `UUID`                      | `NOT NULL, REFERENCES projects(id) ON DELETE CASCADE` | Thuộc dự án nào                                      |
-| `sprint_id`      | `UUID`                      | `NULL, REFERENCES sprints(id) ON DELETE SET NULL`     | Thuộc Sprint nào (có thể null nếu ở Backlog)         |
-| `parent_id`      | `UUID`                      | `NULL, REFERENCES tasks(id) ON DELETE CASCADE`        | ID task cha (nếu đây là subtask)                     |
-| `status_id`      | `UUID`                      | `NOT NULL, REFERENCES task_statuses(id)`              | Trạng thái công việc hiện tại                        |
-| `task_number`    | `INT`                       | `NOT NULL`                                            | Số thứ tự tự tăng trong dự án (VD: 101 -> `PRJ-101`) |
-| `title`          | `VARCHAR(255)`              | `NOT NULL`                                            | Tiêu đề công việc                                    |
-| `description`    | `TEXT`                      | `NULL`                                                | Mô tả chi tiết (Markdown/HTML)                       |
-| `priority`       | `VARCHAR(20)`               | `DEFAULT 'MEDIUM'`                                    | `LOW`, `MEDIUM`, `HIGH`, `URGENT`                    |
-| `reporter_id`    | `UUID`                      | `NOT NULL, REFERENCES users(id)`                      | Người giao / tạo task                                |
-| `assignee_id`    | `UUID`                      | `NULL, REFERENCES users(id)`                          | Người chịu trách nhiệm thực hiện                     |
-| `estimate_hours` | `NUMERIC(5,2)`              | `NULL`                                                | Ước tính số giờ hoàn thành                           |
-| `due_date`       | `TIMESTAMPTZ`               | `NULL`                                                | Hạn chót hoàn thành                                  |
-| `position`       | `DOUBLE PRECISION`          | `NOT NULL, DEFAULT 0`                                 | Vị trí sắp xếp kéo thả (Lexorank/Float)              |
-| `created_at`     | `TIMESTAMPTZ`               | `NOT NULL, DEFAULT NOW()`                             | Thời điểm tạo                                        |
-| `updated_at`     | `TIMESTAMPTZ`               | `NOT NULL, DEFAULT NOW()`                             | Thời điểm cập nhật                                   |
-| `deleted_at`     | `TIMESTAMPTZ`               | `NULL`                                                | Thùng rác (Soft Delete)                              |
-| `UNIQUE`         | `(project_id, task_number)` |                                                       | Mã định danh đẹp không trùng `PRJ-101`               |
-
-#### Bảng `labels` & `task_labels`
-
-Nhãn đánh dấu phân loại công việc.
+Nhãn đánh dấu và phân loại issue.
 
 ```sql
 CREATE TABLE labels (
@@ -198,111 +162,73 @@ CREATE TABLE labels (
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE TABLE task_labels (
-    task_id UUID NOT NULL REFERENCES tasks(id) ON DELETE CASCADE,
+CREATE TABLE issue_labels (
+    issue_id UUID NOT NULL REFERENCES issues(id) ON DELETE CASCADE,
     label_id UUID NOT NULL REFERENCES labels(id) ON DELETE CASCADE,
-    PRIMARY KEY (task_id, label_id)
+    PRIMARY KEY (issue_id, label_id)
 );
 ```
 
 ---
 
-### 3.4. Phân hệ Thảo luận & Tệp đính kèm
+### 3.4. Thảo luận (Comments)
 
 #### Bảng `comments`
 
 Bình luận thảo luận dưới mỗi Task (hỗ trợ trả lời theo cây/thread).
 
-| Tên Cột      | Kiểu Dữ Liệu  | Ràng Buộc                                          | Mô Tả                                 |
-| :----------- | :------------ | :------------------------------------------------- | :------------------------------------ |
-| `id`         | `UUID`        | `PRIMARY KEY, DEFAULT gen_random_uuid()`           | ID bình luận                          |
-| `task_id`    | `UUID`        | `NOT NULL, REFERENCES tasks(id) ON DELETE CASCADE` | ID task tương ứng                     |
-| `author_id`  | `UUID`        | `NOT NULL, REFERENCES users(id)`                   | Tác giả bình luận                     |
-| `parent_id`  | `UUID`        | `NULL, REFERENCES comments(id) ON DELETE CASCADE`  | Bình luận cha (cho dạng reply thread) |
-| `content`    | `TEXT`        | `NOT NULL`                                         | Nội dung bình luận (Rich text)        |
-| `created_at` | `TIMESTAMPTZ` | `NOT NULL, DEFAULT NOW()`                          | Thời gian viết                        |
-| `updated_at` | `TIMESTAMPTZ` | `NOT NULL, DEFAULT NOW()`                          | Thời gian sửa                         |
-
-#### Bảng `attachments`
-
-Tệp tin đính kèm liên kết với Task hoặc Comment.
-
-| Tên Cột       | Kiểu Dữ Liệu   | Ràng Buộc                                          | Mô Tả                                           |
-| :------------ | :------------- | :------------------------------------------------- | :---------------------------------------------- |
-| `id`          | `UUID`         | `PRIMARY KEY, DEFAULT gen_random_uuid()`           | ID tệp                                          |
-| `task_id`     | `UUID`         | `NOT NULL, REFERENCES tasks(id) ON DELETE CASCADE` | Đính kèm ở task nào                             |
-| `uploader_id` | `UUID`         | `NOT NULL, REFERENCES users(id)`                   | Người tải lên                                   |
-| `file_name`   | `VARCHAR(255)` | `NOT NULL`                                         | Tên gốc của tệp                                 |
-| `file_url`    | `TEXT`         | `NOT NULL`                                         | Đường dẫn S3/Cloud Storage                      |
-| `file_size`   | `BIGINT`       | `NOT NULL`                                         | Kích thước tệp (bytes)                          |
-| `mime_type`   | `VARCHAR(100)` | `NOT NULL`                                         | Loại định dạng (`image/png`, `application/pdf`) |
-| `created_at`  | `TIMESTAMPTZ`  | `NOT NULL, DEFAULT NOW()`                          | Thời gian tải lên                               |
+| Tên Cột | Kiểu Dữ Liệu | Ràng Buộc | Mô Tả |
+| :--- | :--- | :--- | :--- |
+| `id` | `UUID` | `PRIMARY KEY, DEFAULT gen_random_uuid()` | ID bình luận |
+| `issue_id` | `UUID` | `NOT NULL, REFERENCES issues(id) ON DELETE CASCADE` | Liên kết Issue |
+| `author_id` | `UUID` | `NOT NULL, REFERENCES users(id)` | Tác giả |
+| `content` | `TEXT` | `NOT NULL` | Nội dung bình luận |
+| `created_at` | `TIMESTAMPTZ` | `NOT NULL, DEFAULT NOW()` | Thời gian tạo |
+| `updated_at` | `TIMESTAMPTZ` | `NOT NULL, DEFAULT NOW()` | Thời gian sửa |
 
 ---
 
-### 3.5. Phân hệ Nhật ký & Ghi nhận thời gian
+## 4. Kiến trúc Bảo mật & Mutation Boundary
 
-#### Bảng `time_logs`
+### 4.1. Khóa Quyền Direct Mutation trên `issues`
+Để triệt tiêu nguy cơ privilege escalation ở cấp cột (`project_id`, `reporter_id`, `issue_number`, `deleted_at`):
+- Toàn bộ quyền direct `INSERT`, `UPDATE`, `DELETE` trên bảng `issues` bị thu hồi từ role `authenticated`.
+- Người dùng chỉ có quyền `SELECT` qua RLS Policy (`deleted_at IS NULL AND private.is_project_member(project_id)`).
 
-Ghi nhận số giờ làm việc thực tế cho Task.
+### 4.2. Schema `private` (Defense-in-depth)
+Chứa các authorization helper functions nội bộ, không lộ ra PostgREST API công khai:
+- `private.is_workspace_member(p_workspace_id UUID)`
+- `private.is_project_member(p_project_id UUID)`
+- `private.can_manage_project(p_project_id UUID)`
+Tất cả hàm đều được gắn `SECURITY DEFINER SET search_path = ''` và thu hồi quyền `EXECUTE` trực tiếp từ `PUBLIC, anon, authenticated`.
 
-| Tên Cột       | Kiểu Dữ Liệu   | Ràng Buộc                                          | Mô Tả                    |
-| :------------ | :------------- | :------------------------------------------------- | :----------------------- |
-| `id`          | `UUID`         | `PRIMARY KEY, DEFAULT gen_random_uuid()`           | ID log                   |
-| `task_id`     | `UUID`         | `NOT NULL, REFERENCES tasks(id) ON DELETE CASCADE` | Task được log giờ        |
-| `user_id`     | `UUID`         | `NOT NULL, REFERENCES users(id)`                   | Người log giờ            |
-| `hours_spent` | `NUMERIC(5,2)` | `NOT NULL CHECK (hours_spent > 0)`                 | Số giờ đã làm            |
-| `work_date`   | `DATE`         | `NOT NULL DEFAULT CURRENT_DATE`                    | Ngày thực hiện công việc |
-| `description` | `TEXT`         | `NULL`                                             | Ghi chú công việc đã làm |
-| `created_at`  | `TIMESTAMPTZ`  | `NOT NULL, DEFAULT NOW()`                          | Ngày tạo bản ghi         |
-
-#### Bảng `activity_logs`
-
-Audit trail lưu toàn bộ lịch sử thay đổi công việc.
-
-| Tên Cột      | Kiểu Dữ Liệu  | Ràng Buộc                                          | Mô Tả                                                    |
-| :----------- | :------------ | :------------------------------------------------- | :------------------------------------------------------- |
-| `id`         | `UUID`        | `PRIMARY KEY, DEFAULT gen_random_uuid()`           | ID log                                                   |
-| `task_id`    | `UUID`        | `NOT NULL, REFERENCES tasks(id) ON DELETE CASCADE` | Task bị tác động                                         |
-| `actor_id`   | `UUID`        | `NOT NULL, REFERENCES users(id)`                   | Người thực hiện hành động                                |
-| `action`     | `VARCHAR(50)` | `NOT NULL`                                         | `STATUS_CHANGED`, `ASSIGNEE_CHANGED`, `PRIORITY_UPDATED` |
-| `changes`    | `JSONB`       | `NOT NULL`                                         | Lưu dạng diff: `{"old": "TODO", "new": "DONE"}`          |
-| `created_at` | `TIMESTAMPTZ` | `NOT NULL, DEFAULT NOW()`                          | Thời điểm diễn ra                                        |
+### 4.3. Transaction-safe RPC `public.create_issue`
+Cổng mutation duy nhất phục vụ tạo issue:
+1. Xác thực `v_reporter_id := auth.uid()`.
+2. Tự authorize quyền thành viên dự án (`private.is_project_member(p_project_id)`).
+3. Validate đầu vào: `BTRIM(title)`, trạng thái, mức độ ưu tiên.
+4. Kiểm tra invariants: `assignee_id` phải thuộc `project_members`, `label_ids` phải thuộc cùng `workspace_id`.
+5. Khóa row project `SELECT next_issue_number FROM projects WHERE id = p_project_id FOR UPDATE`, cấp phát số tuần tự và tăng counter.
+6. Insert vào `issues` và `issue_labels` (deduplicate bằng `SELECT DISTINCT`).
+7. Trả về row issue vừa tạo; toàn bộ quá trình được đóng gói trong một transaction ACID.
 
 ---
 
-## 4. Chỉ mục Index & Tối ưu hiệu năng (Performance Indexing)
-
-Đề xuất các chỉ mục Index quan trọng để truy vấn bảng Kanban board và danh sách công việc cực nhanh:
+## 5. Performance Indexing
 
 ```sql
--- 1. Index cho truy vấn danh sách task theo dự án & trạng thái (màn hình Kanban Board)
-CREATE INDEX idx_tasks_project_status ON tasks(project_id, status_id) WHERE deleted_at IS NULL;
+-- 1. Index truy vấn danh sách issue theo dự án và trạng thái (Kanban board / list)
+CREATE INDEX idx_issues_project_status ON issues(project_id, status) WHERE deleted_at IS NULL;
 
--- 2. Index cho truy vấn task theo Sprint
-CREATE INDEX idx_tasks_sprint ON tasks(sprint_id) WHERE deleted_at IS NULL;
+-- 2. Index truy vấn issue theo Sprint
+CREATE INDEX idx_issues_sprint ON issues(sprint_id) WHERE deleted_at IS NULL;
 
--- 3. Index hỗ trợ lọc task của tôi (My Tasks / Assignee)
-CREATE INDEX idx_tasks_assignee ON tasks(assignee_id) WHERE deleted_at IS NULL;
+-- 3. Index hỗ trợ lọc My Issues
+CREATE INDEX idx_issues_assignee ON issues(assignee_id) WHERE deleted_at IS NULL;
 
--- 4. Index hỗ trợ sắp xếp vị trí kéo thả (Kanban drag-and-drop order)
-CREATE INDEX idx_tasks_position ON tasks(status_id, position ASC);
+-- 4. Index sắp xếp vị trí kéo thả
+CREATE INDEX idx_issues_position ON issues(status, position ASC) WHERE deleted_at IS NULL;
 
--- 5. Index tra cứu nhanh mã issue (VD: PRJ-101)
-CREATE UNIQUE INDEX idx_tasks_project_number ON tasks(project_id, task_number);
-
--- 6. Index truy vấn Activity Log theo Task
-CREATE INDEX idx_activity_logs_task ON activity_logs(task_id, created_at DESC);
+-- 5. Index truy vấn comment theo Issue
+CREATE INDEX idx_comments_issue ON comments(issue_id, created_at ASC);
 ```
-
----
-
-## 5. Điểm thảo luận & Review dành cho bạn (Review Points)
-
-> [!IMPORTANT]
-> Hãy xem xét và cho ý kiến phản hồi chi tiết về các câu hỏi thiết kế sau:
-
-1. **Multi-assignees**: Hiện tại thiết kế 1 task chỉ có 1 `assignee_id` chính (theo phong cách Jira/Linear). Dự án của bạn muốn 1 task có 1 người làm hay cho phép phân công **nhiều người (Multiple Assignees)**?
-2. **Subtask nesting**: Thiết kế đang dùng tự tham chiếu `parent_id` trong bảng `tasks` (cho phép làm subtask n-cấp). Bạn có muốn giới hạn chỉ 1 cấp subtask hay n-cấp?
-3. **Lexorank Drag-and-drop**: Thuộc tính `position` dạng `DOUBLE PRECISION` phục vụ tính toán lại thứ tự khi kéo thả trên Kanban Board mà không phải re-index toàn bộ bảng. Bạn có muốn đổi sang chuỗi Lexorank string không?
-4. **Soft Delete**: Bảng `tasks` sử dụng cột `deleted_at` để khôi phục khi lỡ xóa nhầm. Các bảng khác có cần soft delete không?

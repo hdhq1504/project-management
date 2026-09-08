@@ -90,6 +90,7 @@ export interface Database {
           description: string | null;
           lead_id: string | null;
           status: 'PLANNING' | 'ACTIVE' | 'ON_HOLD' | 'COMPLETED' | 'ARCHIVED';
+          next_issue_number: number;
           created_at: string;
           updated_at: string;
         };
@@ -101,6 +102,7 @@ export interface Database {
           description?: string | null;
           lead_id?: string | null;
           status?: 'PLANNING' | 'ACTIVE' | 'ON_HOLD' | 'COMPLETED' | 'ARCHIVED';
+          next_issue_number?: number;
           created_at?: string;
           updated_at?: string;
         };
@@ -112,6 +114,7 @@ export interface Database {
           description?: string | null;
           lead_id?: string | null;
           status?: 'PLANNING' | 'ACTIVE' | 'ON_HOLD' | 'COMPLETED' | 'ARCHIVED';
+          next_issue_number?: number;
           created_at?: string;
           updated_at?: string;
         };
@@ -171,87 +174,60 @@ export interface Database {
         };
         Relationships: [];
       };
-      task_statuses: {
-        Row: {
-          id: string;
-          project_id: string;
-          name: string;
-          category: 'TODO' | 'IN_PROGRESS' | 'DONE' | 'CANCELLED';
-          position: number;
-          color: string;
-          created_at: string;
-        };
-        Insert: {
-          id?: string;
-          project_id: string;
-          name: string;
-          category: 'TODO' | 'IN_PROGRESS' | 'DONE' | 'CANCELLED';
-          position?: number;
-          color?: string;
-          created_at?: string;
-        };
-        Update: {
-          id?: string;
-          project_id?: string;
-          name?: string;
-          category?: 'TODO' | 'IN_PROGRESS' | 'DONE' | 'CANCELLED';
-          position?: number;
-          color?: string;
-          created_at?: string;
-        };
-        Relationships: [];
-      };
-      tasks: {
+      issues: {
         Row: {
           id: string;
           project_id: string;
           sprint_id: string | null;
           parent_id: string | null;
-          status_id: string;
-          task_number: number;
+          issue_number: number;
           title: string;
           description: string | null;
-          priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
+          status: 'backlog' | 'todo' | 'in_progress' | 'done' | 'canceled';
+          priority: 'no_priority' | 'urgent' | 'high' | 'medium' | 'low';
           reporter_id: string;
           assignee_id: string | null;
           due_date: string | null;
           position: number;
           created_at: string;
           updated_at: string;
+          deleted_at: string | null;
         };
         Insert: {
           id?: string;
           project_id: string;
           sprint_id?: string | null;
           parent_id?: string | null;
-          status_id: string;
-          task_number: number;
+          issue_number: number;
           title: string;
           description?: string | null;
-          priority?: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
+          status?: 'backlog' | 'todo' | 'in_progress' | 'done' | 'canceled';
+          priority?: 'no_priority' | 'urgent' | 'high' | 'medium' | 'low';
           reporter_id: string;
           assignee_id?: string | null;
           due_date?: string | null;
           position?: number;
           created_at?: string;
           updated_at?: string;
+          deleted_at?: string | null;
         };
         Update: {
           id?: string;
           project_id?: string;
           sprint_id?: string | null;
           parent_id?: string | null;
-          status_id?: string;
-          task_number?: number;
+          issue_number?: number;
           title?: string;
           description?: string | null;
-          priority?: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
+          status?: 'backlog' | 'todo' | 'in_progress' | 'done' | 'canceled';
+          priority?: 'no_priority' | 'urgent' | 'high' | 'medium' | 'low';
           reporter_id?: string;
           assignee_id?: string | null;
           due_date?: string | null;
           position?: number;
           created_at?: string;
           updated_at?: string;
+          deleted_at?: string | null;
         };
         Relationships: [];
       };
@@ -279,17 +255,17 @@ export interface Database {
         };
         Relationships: [];
       };
-      task_labels: {
+      issue_labels: {
         Row: {
-          task_id: string;
+          issue_id: string;
           label_id: string;
         };
         Insert: {
-          task_id: string;
+          issue_id: string;
           label_id: string;
         };
         Update: {
-          task_id?: string;
+          issue_id?: string;
           label_id?: string;
         };
         Relationships: [];
@@ -297,7 +273,7 @@ export interface Database {
       comments: {
         Row: {
           id: string;
-          task_id: string;
+          issue_id: string;
           author_id: string;
           content: string;
           created_at: string;
@@ -305,7 +281,7 @@ export interface Database {
         };
         Insert: {
           id?: string;
-          task_id: string;
+          issue_id: string;
           author_id: string;
           content: string;
           created_at?: string;
@@ -313,7 +289,7 @@ export interface Database {
         };
         Update: {
           id?: string;
-          task_id?: string;
+          issue_id?: string;
           author_id?: string;
           content?: string;
           created_at?: string;
@@ -323,7 +299,20 @@ export interface Database {
       };
     };
     Views: Record<string, never>;
-    Functions: Record<string, never>;
+    Functions: {
+      create_issue: {
+        Args: {
+          p_project_id: string;
+          p_title: string;
+          p_description?: string | null;
+          p_status?: 'backlog' | 'todo' | 'in_progress' | 'done' | 'canceled';
+          p_priority?: 'no_priority' | 'urgent' | 'high' | 'medium' | 'low';
+          p_assignee_id?: string | null;
+          p_label_ids?: string[];
+        };
+        Returns: Database['public']['Tables']['issues']['Row'];
+      };
+    };
     Enums: Record<string, never>;
   };
 }
