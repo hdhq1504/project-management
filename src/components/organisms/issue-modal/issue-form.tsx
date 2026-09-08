@@ -27,6 +27,7 @@ function IssueForm({ onClose, onSubmit, isPending = false }: IssueFormProps) {
       status: 'backlog',
       priority: 'no_priority',
       labels: [],
+      assigneeId: null,
       ...storeDefaults
     }
   });
@@ -34,7 +35,15 @@ function IssueForm({ onClose, onSubmit, isPending = false }: IssueFormProps) {
   const { reset } = form;
 
   useEffect(() => {
-    reset({ title: '', description: '', status: 'backlog', priority: 'no_priority', labels: [], ...storeDefaults });
+    reset({
+      title: '',
+      description: '',
+      status: 'backlog',
+      priority: 'no_priority',
+      labels: [],
+      assigneeId: null,
+      ...storeDefaults
+    });
   }, [storeDefaults, reset]);
 
   const handleClose = useCallback(() => {

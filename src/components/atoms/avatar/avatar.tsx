@@ -1,25 +1,33 @@
 import * as React from 'react';
 import { Avatar as AvatarPrimitive } from 'radix-ui';
-
+import { getInitials } from '@/utils';
 import { cn } from '@/libs/utils';
 
-function Avatar({
-  className,
-  size = 'default',
-  ...props
-}: React.ComponentProps<typeof AvatarPrimitive.Root> & {
-  size?: 'default' | 'sm' | 'lg';
-}) {
+export type AvatarProps = React.ComponentProps<typeof AvatarPrimitive.Root> & {
+  size?: 'default' | 'sm' | 'lg' | 'xs';
+  src?: string | null;
+  alt?: string;
+  name?: string;
+  fallback?: React.ReactNode;
+};
+
+function Avatar({ className, size = 'default', src, alt, name, fallback, children, ...props }: AvatarProps) {
+  const fallbackContent = fallback ?? (name ? getInitials(name) : undefined);
+
   return (
     <AvatarPrimitive.Root
       data-slot="avatar"
       data-size={size}
       className={cn(
-        'group/avatar after:border-border relative flex size-8 shrink-0 rounded-full select-none after:absolute after:inset-0 after:rounded-full after:border after:mix-blend-darken data-[size=lg]:size-10 data-[size=sm]:size-6 dark:after:mix-blend-lighten',
+        'group/avatar after:border-border relative flex size-8 shrink-0 rounded-full select-none after:absolute after:inset-0 after:rounded-full after:border after:mix-blend-darken data-[size=lg]:size-10 data-[size=sm]:size-6 data-[size=xs]:size-4 dark:after:mix-blend-lighten',
         className
       )}
       {...props}
-    />
+    >
+      {src && <AvatarImage src={src} alt={alt ?? name} />}
+      {fallbackContent && <AvatarFallback>{fallbackContent}</AvatarFallback>}
+      {children}
+    </AvatarPrimitive.Root>
   );
 }
 
@@ -38,7 +46,7 @@ function AvatarFallback({ className, ...props }: React.ComponentProps<typeof Ava
     <AvatarPrimitive.Fallback
       data-slot="avatar-fallback"
       className={cn(
-        'bg-muted text-muted-foreground flex size-full items-center justify-center rounded-full text-sm group-data-[size=sm]/avatar:text-xs',
+        'bg-muted text-muted-foreground flex size-full items-center justify-center rounded-full text-sm group-data-[size=sm]/avatar:text-xs group-data-[size=xs]/avatar:text-[9px]',
         className
       )}
       {...props}

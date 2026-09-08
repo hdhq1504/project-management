@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { Issue } from '@/types/issue.types';
+import type { UserId } from '@/types/user.types';
 import type { IssueStatusId } from '@/constants/issue-status';
 import type { IssuePriorityId } from '@/constants/issue-priority';
 import { LABELS } from '@/constants/issue-label';
@@ -12,8 +13,10 @@ import { UserCircleIcon } from '@/components/atoms/icon/user-circle-icon';
 import { ColorDot } from '@/components/atoms/color-dot';
 import { Checkbox } from '@/components/atoms/checkbox';
 import { Badge } from '@/components/atoms/badge';
+import { Avatar } from '@/components/atoms/avatar';
 import { IssuePropertySelect } from '@/components/molecules/issue-property-select';
 import { IssuePropertyCheckbox } from '@/components/molecules/issue-property-checkbox';
+import { ASSIGNEES } from '@/mocks/assignees';
 import { formatIssueDate } from '@/utils/issue.utils';
 import { cn } from '@/libs/utils';
 
@@ -22,10 +25,18 @@ export type IssueRowProps = {
   onStatusChange?: (status: IssueStatusId) => void;
   onPriorityChange?: (priority: IssuePriorityId) => void;
   onLabelsChange?: (labels: string[]) => void;
+  onAssigneeChange?: (assigneeId: UserId | null) => void;
   className?: string;
 };
 
-function IssueRow({ issue, onStatusChange, onPriorityChange, onLabelsChange, className }: IssueRowProps) {
+function IssueRow({
+  issue,
+  onStatusChange,
+  onPriorityChange,
+  onLabelsChange,
+  onAssigneeChange,
+  className
+}: IssueRowProps) {
   // TODO: Move selection state to list/page level when bulk actions are implemented.
   const [isChecked, setIsChecked] = useState(false);
 
@@ -50,15 +61,18 @@ function IssueRow({ issue, onStatusChange, onPriorityChange, onLabelsChange, cla
         items={ISSUE_PRIORITIES}
         onValueChange={(val) => onPriorityChange?.(val)}
         renderIcon={(item) => <PriorityIcon priority={item.id} className="size-3.5" />}
-        renderTrigger={(item) => (
-          <button
-            type="button"
-            className="text-muted-foreground hover:bg-muted hover:text-foreground flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-xs transition-colors"
-            aria-label="Change priority"
-          >
-            <PriorityIcon priority={item.id} className="size-3.5" />
-          </button>
-        )}
+        renderTrigger={({ item }) => {
+          if (!item) return null;
+          return (
+            <button
+              type="button"
+              className="text-muted-foreground hover:bg-muted hover:text-foreground flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-xs transition-colors"
+              aria-label="Change priority"
+            >
+              <PriorityIcon priority={item.id} className="size-3.5" />
+            </button>
+          );
+        }}
       />
 
       <span className="text-muted-foreground/70 shrink-0 text-sm font-medium tracking-tight">{issue.id}</span>
@@ -68,15 +82,18 @@ function IssueRow({ issue, onStatusChange, onPriorityChange, onLabelsChange, cla
         items={ISSUE_STATUSES}
         onValueChange={(val) => onStatusChange?.(val)}
         renderIcon={(item) => <StatusIcon status={item.id} className="size-4" />}
-        renderTrigger={(item) => (
-          <button
-            type="button"
-            className="text-muted-foreground hover:bg-muted hover:text-foreground flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-xs transition-colors"
-            aria-label="Change status"
-          >
-            <StatusIcon status={item.id} className="size-4" />
-          </button>
-        )}
+        renderTrigger={({ item }) => {
+          if (!item) return null;
+          return (
+            <button
+              type="button"
+              className="text-muted-foreground hover:bg-muted hover:text-foreground flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-xs transition-colors"
+              aria-label="Change status"
+            >
+              <StatusIcon status={item.id} className="size-4" />
+            </button>
+          );
+        }}
       />
 
       <div className="min-w-0 flex-1 pr-4">
@@ -120,9 +137,35 @@ function IssueRow({ issue, onStatusChange, onPriorityChange, onLabelsChange, cla
         }}
       />
 
-      <div className="text-muted-foreground/60 flex size-4 shrink-0 items-center justify-center">
-        <UserCircleIcon className="size-4" />
-      </div>
+      <IssuePropertySelect
+        items={ASSIGNEES}
+        value={issue.assigneeId}
+        onValueChange={(val) => onAssigneeChange?.(val)}
+        onClear={() => onAssigneeChange?.(null)}
+        clearLabel="Unassigned"
+        clearShortcut="0"
+        invalidLabel="Unknown assignee"
+        renderIcon={(item) => <Avatar size="xs" name={item.name} src={item.avatarUrl} />}
+        placeholder="Assignee"
+        fallbackIcon={<UserCircleIcon className="size-4" />}
+        renderTrigger={({ item, isInvalid }) => (
+          <button
+            type="button"
+            className={cn(
+              'text-muted-foreground/60 hover:bg-muted hover:text-foreground flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-full transition-colors',
+              isInvalid && 'text-amber-500 ring-1 ring-amber-500/50'
+            )}
+            aria-label={isInvalid ? 'Unknown assignee' : 'Change assignee'}
+            title={isInvalid ? `Unknown assignee (${issue.assigneeId})` : undefined}
+          >
+            {item ? (
+              <Avatar size="xs" name={item.name} src={item.avatarUrl} />
+            ) : (
+              <UserCircleIcon className={cn('size-4', isInvalid && 'text-amber-500')} />
+            )}
+          </button>
+        )}
+      />
 
       <span className="text-muted-foreground/60 shrink-0 text-right text-sm">{formatIssueDate(issue.createdAt)}</span>
     </div>

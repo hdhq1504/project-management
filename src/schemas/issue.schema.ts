@@ -7,13 +7,8 @@ export const issueSchema = z.object({
   description: z.string().optional(),
   status: z.custom<IssueStatusId>().optional(),
   priority: z.custom<IssuePriorityId>().optional(),
-  labels: z.array(z.string()).optional()
+  labels: z.array(z.string()).optional(),
+  assigneeId: z.string().min(1).nullable().optional()
 });
 
-export type IssueFields = {
-  title: string;
-  description?: string;
-  status?: IssueStatusId;
-  priority?: IssuePriorityId;
-  labels?: string[];
-};
+export type IssueFields = z.infer<typeof issueSchema>;

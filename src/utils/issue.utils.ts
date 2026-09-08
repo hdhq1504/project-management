@@ -29,3 +29,18 @@ export function formatIssueDate(dateString: string): string {
     day: 'numeric'
   });
 }
+
+/**
+ * Extract up to 2 uppercase initials from a user's name for avatar rendering
+ */
+export function getInitials(name: string): string {
+  const trimmedName = name.trim();
+
+  if (!trimmedName) return '';
+
+  return trimmedName
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() ?? '')
+    .join('');
+}

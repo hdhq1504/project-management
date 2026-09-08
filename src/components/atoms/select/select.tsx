@@ -12,7 +12,7 @@ export type SelectProps<T> = {
   items: readonly T[];
   value?: string;
   getValue: (item: T) => string;
-  getShortcut?: (item: T) => string;
+  getShortcut?: (item: T) => string | undefined;
   onValueChange?: (item: T) => void;
   onKeyDown?: (e: KeyboardEvent) => void;
   disabled?: boolean;

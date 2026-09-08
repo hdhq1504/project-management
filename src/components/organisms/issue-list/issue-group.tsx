@@ -1,7 +1,5 @@
 import { useState } from 'react';
 import type { GroupedIssues, UpdateIssueInput } from '@/types/issue.types';
-import type { IssueStatusId } from '@/constants/issue-status';
-import type { IssuePriorityId } from '@/constants/issue-priority';
 import { useIssueModalStore } from '@/stores/issue-modal.store';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/atoms/collapsible';
 import { IssueGroupHeader } from './issue-group-header';
@@ -44,9 +42,10 @@ function IssueGroup({ group, onUpdateIssue, defaultOpen = true, className }: Iss
           <IssueRow
             key={issue.id}
             issue={issue}
-            onStatusChange={(newStatus: IssueStatusId) => onUpdateIssue?.(issue.id, { status: newStatus })}
-            onPriorityChange={(newPriority: IssuePriorityId) => onUpdateIssue?.(issue.id, { priority: newPriority })}
-            onLabelsChange={(newLabels: string[]) => onUpdateIssue?.(issue.id, { labels: newLabels })}
+            onStatusChange={(newStatus) => onUpdateIssue?.(issue.id, { status: newStatus })}
+            onPriorityChange={(newPriority) => onUpdateIssue?.(issue.id, { priority: newPriority })}
+            onLabelsChange={(newLabels) => onUpdateIssue?.(issue.id, { labels: newLabels })}
+            onAssigneeChange={(newAssigneeId) => onUpdateIssue?.(issue.id, { assigneeId: newAssigneeId })}
           />
         ))}
       </CollapsibleContent>
