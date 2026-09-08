@@ -40,6 +40,9 @@ function IssueProperties() {
         onValueChange={assignee.onChange}
         items={ASSIGNEES}
         onClear={() => assignee.onChange(null)}
+        clearLabel="Unassigned"
+        clearShortcut="0"
+        invalidLabel="Unknown assignee"
         renderIcon={(item) => <Avatar size="xs" name={item.name} src={item.avatarUrl} />}
         placeholder="Assignee"
         fallbackIcon={<UserCircleIcon className="size-4" />}

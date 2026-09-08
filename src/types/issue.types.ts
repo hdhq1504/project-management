@@ -1,6 +1,6 @@
 import type { IssueStatusId } from '@/constants/issue-status';
 import type { IssuePriorityId } from '@/constants/issue-priority';
-import type { User } from '@/types/user.types';
+import type { UserId } from '@/types/user.types';
 
 export type Issue = {
   id: string;
@@ -9,7 +9,7 @@ export type Issue = {
   status: IssueStatusId;
   priority: IssuePriorityId;
   labels?: string[];
-  assigneeId: User['id'] | null;
+  assigneeId: UserId | null;
   createdAt: string;
   updatedAt?: string;
 };
@@ -20,7 +20,7 @@ export type CreateIssueInput = {
   status?: IssueStatusId;
   priority?: IssuePriorityId;
   labels?: string[];
-  assigneeId?: User['id'] | null;
+  assigneeId?: UserId | null;
 };
 
 export type UpdateIssueInput = Partial<Omit<Issue, 'id' | 'createdAt' | 'updatedAt'>>;

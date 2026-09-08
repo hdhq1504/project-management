@@ -31,9 +31,16 @@ export function formatIssueDate(dateString: string): string {
 }
 
 /**
- * Extract initial character from a user's name for avatar rendering
+ * Extract up to 2 uppercase initials from a user's name for avatar rendering
  */
 export function getInitials(name: string): string {
-  if (!name) return '';
-  return name.trim().charAt(0).toUpperCase();
+  const trimmedName = name.trim();
+
+  if (!trimmedName) return '';
+
+  return trimmedName
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() ?? '')
+    .join('');
 }

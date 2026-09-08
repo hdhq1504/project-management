@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { Issue } from '@/types/issue.types';
+import type { UserId } from '@/types/user.types';
 import type { IssueStatusId } from '@/constants/issue-status';
 import type { IssuePriorityId } from '@/constants/issue-priority';
 import { LABELS } from '@/constants/issue-label';
@@ -24,7 +25,7 @@ export type IssueRowProps = {
   onStatusChange?: (status: IssueStatusId) => void;
   onPriorityChange?: (priority: IssuePriorityId) => void;
   onLabelsChange?: (labels: string[]) => void;
-  onAssigneeChange?: (assigneeId: string | null) => void;
+  onAssigneeChange?: (assigneeId: UserId | null) => void;
   className?: string;
 };
 
@@ -60,7 +61,7 @@ function IssueRow({
         items={ISSUE_PRIORITIES}
         onValueChange={(val) => onPriorityChange?.(val)}
         renderIcon={(item) => <PriorityIcon priority={item.id} className="size-3.5" />}
-        renderTrigger={(item) => {
+        renderTrigger={({ item }) => {
           if (!item) return null;
           return (
             <button
@@ -81,7 +82,7 @@ function IssueRow({
         items={ISSUE_STATUSES}
         onValueChange={(val) => onStatusChange?.(val)}
         renderIcon={(item) => <StatusIcon status={item.id} className="size-4" />}
-        renderTrigger={(item) => {
+        renderTrigger={({ item }) => {
           if (!item) return null;
           return (
             <button
@@ -141,16 +142,27 @@ function IssueRow({
         value={issue.assigneeId}
         onValueChange={(val) => onAssigneeChange?.(val)}
         onClear={() => onAssigneeChange?.(null)}
+        clearLabel="Unassigned"
+        clearShortcut="0"
+        invalidLabel="Unknown assignee"
         renderIcon={(item) => <Avatar size="xs" name={item.name} src={item.avatarUrl} />}
         placeholder="Assignee"
         fallbackIcon={<UserCircleIcon className="size-4" />}
-        renderTrigger={(item) => (
+        renderTrigger={({ item, isInvalid }) => (
           <button
             type="button"
-            className="text-muted-foreground/60 hover:bg-muted hover:text-foreground flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-full transition-colors"
-            aria-label="Change assignee"
+            className={cn(
+              'text-muted-foreground/60 hover:bg-muted hover:text-foreground flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-full transition-colors',
+              isInvalid && 'text-amber-500 ring-1 ring-amber-500/50'
+            )}
+            aria-label={isInvalid ? 'Unknown assignee' : 'Change assignee'}
+            title={isInvalid ? `Unknown assignee (${issue.assigneeId})` : undefined}
           >
-            {item ? <Avatar size="xs" name={item.name} src={item.avatarUrl} /> : <UserCircleIcon className="size-4" />}
+            {item ? (
+              <Avatar size="xs" name={item.name} src={item.avatarUrl} />
+            ) : (
+              <UserCircleIcon className={cn('size-4', isInvalid && 'text-amber-500')} />
+            )}
           </button>
         )}
       />

@@ -1,12 +1,14 @@
+import type { UserId } from '@/types/user.types';
+
 export type AssigneeOption = {
-  id: string;
-  name: string;
-  shortcut?: string;
-  avatarUrl?: string | null;
+  readonly id: UserId;
+  readonly name: string;
+  readonly shortcut?: string;
+  readonly avatarUrl?: string | null;
 };
 
 // TODO: Replace with project member data from API.
-export const ASSIGNEES: AssigneeOption[] = [
+export const ASSIGNEES: readonly AssigneeOption[] = [
   {
     id: 'user-1',
     name: 'Alex Morgan',
