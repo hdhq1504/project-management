@@ -30,6 +30,8 @@ export function useSignup() {
         throw new Error(profileError?.message ?? 'Không thể tạo hồ sơ người dùng.');
       }
 
+      await authService.ensurePersonalWorkspace(data.user.id);
+
       return { session: data.session, user };
     },
     onSuccess: ({ session, user }) => {

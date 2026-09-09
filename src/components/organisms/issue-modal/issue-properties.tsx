@@ -1,21 +1,37 @@
 import { useController, useFormContext } from 'react-hook-form';
-import { UserCircleIcon, StatusIcon, PriorityIcon, LabelIcon } from '@/components/atoms/icon';
+import { StatusIcon, PriorityIcon, LabelIcon, UserCircleIcon } from '@/components/atoms/icon';
 import { ColorDot } from '@/components/atoms/color-dot';
 import { Avatar } from '@/components/atoms/avatar';
 import { ISSUE_STATUSES } from '@/constants/issue-status';
 import { ISSUE_PRIORITIES } from '@/constants/issue-priority';
-import { LABELS } from '@/constants/issue-label';
 import { IssuePropertySelect } from '@/components/molecules/issue-property-select';
 import { IssuePropertyCheckbox } from '@/components/molecules/issue-property-checkbox';
-import { ASSIGNEES } from '@/mocks/assignees';
+import { useLabels } from '@/hooks/use-labels';
+import { useAuthStore } from '@/stores/auth.store';
 import type { IssueFields } from '@/schemas/issue.schema';
 
-function IssueProperties() {
+type IssuePropertiesProps = {
+  workspaceId?: string;
+};
+
+function IssueProperties({ workspaceId }: IssuePropertiesProps) {
   const { control } = useFormContext<IssueFields>();
   const { field: status } = useController({ control, name: 'status' });
   const { field: priority } = useController({ control, name: 'priority' });
-  const { field: labels } = useController({ control, name: 'labels' });
+  const { field: labelIds } = useController({ control, name: 'labelIds' });
   const { field: assignee } = useController({ control, name: 'assigneeId' });
+
+  const { data: labels = [] } = useLabels(workspaceId);
+  const currentUser = useAuthStore((state) => state.user);
+  const assignees = currentUser
+    ? [
+        {
+          id: currentUser.id,
+          name: currentUser.username,
+          avatarUrl: currentUser.avatar_url
+        }
+      ]
+    : [];
 
   return (
     <div className="flex flex-wrap items-center gap-1.5 px-4 py-3">
@@ -36,22 +52,21 @@ function IssueProperties() {
       />
 
       <IssuePropertySelect
-        value={assignee.value}
+        items={assignees}
+        value={assignee.value ?? null}
         onValueChange={assignee.onChange}
-        items={ASSIGNEES}
         onClear={() => assignee.onChange(null)}
         clearLabel="Unassigned"
         clearShortcut="0"
-        invalidLabel="Unknown assignee"
         renderIcon={(item) => <Avatar size="xs" name={item.name} src={item.avatarUrl} />}
         placeholder="Assignee"
         fallbackIcon={<UserCircleIcon className="size-4" />}
       />
 
       <IssuePropertyCheckbox
-        items={LABELS}
-        value={labels.value ?? []}
-        onValueChange={labels.onChange}
+        items={labels}
+        value={labelIds.value ?? []}
+        onValueChange={labelIds.onChange}
         placeholder="Labels"
         renderIcon={(label) => <ColorDot color={label.color} />}
         renderTriggerIcon={(selected) =>

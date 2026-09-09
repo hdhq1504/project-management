@@ -1,6 +1,5 @@
 import { AppSidebar } from '@/components/organisms/sidebar';
 import { IssueModal } from '@/components/organisms/issue-modal';
-import { useIssuesStore } from '@/stores/issues.store';
 import type { ReactNode } from 'react';
 
 type AppLayoutProps = {
@@ -9,8 +8,6 @@ type AppLayoutProps = {
 };
 
 function AppLayout({ children, topbar }: AppLayoutProps) {
-  const addIssue = useIssuesStore((state) => state.addIssue);
-
   return (
     <div className="flex min-h-dvh">
       <aside className="border-border sticky top-0 h-dvh shrink-0 border-r md:w-[250px]">
@@ -22,7 +19,7 @@ function AppLayout({ children, topbar }: AppLayoutProps) {
         <main className="flex-1 overflow-y-auto">{children}</main>
       </div>
 
-      <IssueModal onSubmit={(values) => addIssue(values)} />
+      <IssueModal />
     </div>
   );
 }

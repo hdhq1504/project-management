@@ -26,6 +26,8 @@ export function useLogin() {
         throw new Error(profileError?.message ?? 'Không thể tải hồ sơ người dùng.');
       }
 
+      await authService.ensurePersonalWorkspace(data.user.id);
+
       return { session: data.session, user };
     },
     onSuccess: ({ session, user }) => {
