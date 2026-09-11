@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import type { GroupedIssues, UpdateIssueInput } from '@/types/issue.types';
+import type { LabelItem } from '@/services/label.service';
+import type { IssuePropertyItem } from '@/components/molecules/issue-property-select';
 import { useIssueModalStore } from '@/stores/issue-modal.store';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/atoms/collapsible';
 import { IssueGroupHeader } from './issue-group-header';
@@ -8,12 +10,14 @@ import { cn } from '@/libs/utils';
 
 export type IssueGroupProps = {
   group: GroupedIssues;
-  onUpdateIssue?: (id: string, patch: UpdateIssueInput) => void;
+  labels: readonly LabelItem[];
+  assignees: readonly (IssuePropertyItem & { avatarUrl: string | null })[];
+  onUpdateIssue: (issueId: string, input: UpdateIssueInput) => Promise<void>;
   defaultOpen?: boolean;
   className?: string;
 };
 
-function IssueGroup({ group, onUpdateIssue, defaultOpen = true, className }: IssueGroupProps) {
+function IssueGroup({ group, labels, assignees, onUpdateIssue, defaultOpen = true, className }: IssueGroupProps) {
   const { status, name, issues } = group;
   const [isOpen, setIsOpen] = useState(defaultOpen);
   const openModal = useIssueModalStore((state) => state.open);
@@ -39,14 +43,7 @@ function IssueGroup({ group, onUpdateIssue, defaultOpen = true, className }: Iss
 
       <CollapsibleContent className="flex flex-col">
         {issues.map((issue) => (
-          <IssueRow
-            key={issue.id}
-            issue={issue}
-            onStatusChange={(newStatus) => onUpdateIssue?.(issue.id, { status: newStatus })}
-            onPriorityChange={(newPriority) => onUpdateIssue?.(issue.id, { priority: newPriority })}
-            onLabelsChange={(newLabels) => onUpdateIssue?.(issue.id, { labels: newLabels })}
-            onAssigneeChange={(newAssigneeId) => onUpdateIssue?.(issue.id, { assigneeId: newAssigneeId })}
-          />
+          <IssueRow key={issue.id} issue={issue} labels={labels} assignees={assignees} onUpdateIssue={onUpdateIssue} />
         ))}
       </CollapsibleContent>
     </Collapsible>

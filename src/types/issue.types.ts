@@ -4,12 +4,17 @@ import type { UserId } from '@/types/user.types';
 
 export type Issue = {
   id: string;
+  identifier: string;
+  issueNumber: number;
+  workspaceId: string;
+  projectId: string | null;
   title: string;
   description?: string;
   status: IssueStatusId;
   priority: IssuePriorityId;
-  labels?: string[];
+  labelIds?: string[];
   assigneeId: UserId | null;
+  reporterId: UserId;
   createdAt: string;
   updatedAt?: string;
 };
@@ -19,11 +24,17 @@ export type CreateIssueInput = {
   description?: string;
   status?: IssueStatusId;
   priority?: IssuePriorityId;
-  labels?: string[];
+  labelIds?: string[];
   assigneeId?: UserId | null;
+  projectId?: string | null;
 };
 
-export type UpdateIssueInput = Partial<Omit<Issue, 'id' | 'createdAt' | 'updatedAt'>>;
+export type UpdateIssueInput = {
+  status?: IssueStatusId;
+  priority?: IssuePriorityId;
+  labelIds?: string[];
+  assigneeId?: UserId | null;
+};
 
 export type GroupedIssues = {
   status: IssueStatusId;

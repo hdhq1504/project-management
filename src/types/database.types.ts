@@ -37,6 +37,7 @@ export interface Database {
           slug: string;
           logo_url: string | null;
           owner_id: string;
+          next_issue_number: number;
           created_at: string;
           updated_at: string;
         };
@@ -46,6 +47,7 @@ export interface Database {
           slug: string;
           logo_url?: string | null;
           owner_id: string;
+          next_issue_number?: number;
           created_at?: string;
           updated_at?: string;
         };
@@ -55,6 +57,7 @@ export interface Database {
           slug?: string;
           logo_url?: string | null;
           owner_id?: string;
+          next_issue_number?: number;
           created_at?: string;
           updated_at?: string;
         };
@@ -177,7 +180,8 @@ export interface Database {
       issues: {
         Row: {
           id: string;
-          project_id: string;
+          workspace_id: string;
+          project_id: string | null;
           sprint_id: string | null;
           parent_id: string | null;
           issue_number: number;
@@ -195,7 +199,8 @@ export interface Database {
         };
         Insert: {
           id?: string;
-          project_id: string;
+          workspace_id: string;
+          project_id?: string | null;
           sprint_id?: string | null;
           parent_id?: string | null;
           issue_number: number;
@@ -213,7 +218,8 @@ export interface Database {
         };
         Update: {
           id?: string;
-          project_id?: string;
+          workspace_id?: string;
+          project_id?: string | null;
           sprint_id?: string | null;
           parent_id?: string | null;
           issue_number?: number;
@@ -302,13 +308,29 @@ export interface Database {
     Functions: {
       create_issue: {
         Args: {
-          p_project_id: string;
+          p_workspace_id: string;
           p_title: string;
           p_description?: string | null;
           p_status?: 'backlog' | 'todo' | 'in_progress' | 'done' | 'canceled';
           p_priority?: 'no_priority' | 'urgent' | 'high' | 'medium' | 'low';
           p_assignee_id?: string | null;
           p_label_ids?: string[];
+          p_project_id?: string | null;
+        };
+        Returns: Database['public']['Tables']['issues']['Row'];
+      };
+      ensure_personal_workspace: {
+        Args: Record<string, never>;
+        Returns: Database['public']['Tables']['workspaces']['Row'];
+      };
+      update_issue: {
+        Args: {
+          p_issue_id: string;
+          p_status?: 'backlog' | 'todo' | 'in_progress' | 'done' | 'canceled' | null;
+          p_priority?: 'no_priority' | 'urgent' | 'high' | 'medium' | 'low' | null;
+          p_label_ids?: string[] | null;
+          p_assignee_id?: string | null;
+          p_assignee_id_is_set?: boolean;
         };
         Returns: Database['public']['Tables']['issues']['Row'];
       };

@@ -29,6 +29,18 @@ export function AuthProvider({ children }: PropsWithChildren) {
         return;
       }
 
+      try {
+        await authService.ensurePersonalWorkspace(session.user.id);
+      } catch (workspaceError) {
+        if (!isMounted) return;
+
+        console.error('Không thể khởi tạo workspace:', workspaceError);
+        useAuthStore.getState().clearAuth();
+        return;
+      }
+
+      if (!isMounted) return;
+
       useAuthStore.getState().setAuth(session, profile);
     };
 

@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/atoms/button';
@@ -10,57 +10,84 @@ import { IssueProperties } from './issue-properties';
 import { issueSchema, type IssueFields } from '@/schemas/issue.schema';
 import { useIssueModalStore } from '@/stores/issue-modal.store';
 
+export type WorkspaceState = 'loading' | 'ready' | 'unavailable';
+
 export type IssueFormProps = {
   onClose?: () => void;
-  onSubmit?: (values: IssueFields) => void;
+  onSubmit?: (values: IssueFields) => Promise<void> | void;
   isPending?: boolean;
+  workspaceState?: WorkspaceState;
+  workspaceSlug?: string;
+  workspaceId?: string;
 };
 
-function IssueForm({ onClose, onSubmit, isPending = false }: IssueFormProps) {
+const DEFAULT_VALUES: IssueFields = {
+  title: '',
+  description: '',
+  status: 'backlog',
+  priority: 'no_priority',
+  labelIds: [],
+  assigneeId: null
+};
+
+function getSubmissionErrorMessage(error: unknown) {
+  return error instanceof Error ? error.message : 'Không thể tạo issue. Vui lòng thử lại.';
+}
+
+function IssueForm({
+  onClose,
+  onSubmit,
+  isPending = false,
+  workspaceState = 'ready',
+  workspaceSlug,
+  workspaceId
+}: IssueFormProps) {
   const storeDefaults = useIssueModalStore((state) => state.defaultValues);
+  const [submissionError, setSubmissionError] = useState<string>();
 
   const form = useForm<IssueFields>({
     resolver: zodResolver(issueSchema),
-    defaultValues: {
-      title: '',
-      description: '',
-      status: 'backlog',
-      priority: 'no_priority',
-      labels: [],
-      assigneeId: null,
-      ...storeDefaults
-    }
+    defaultValues: { ...DEFAULT_VALUES, ...storeDefaults }
   });
 
   const { reset } = form;
 
   useEffect(() => {
-    reset({
-      title: '',
-      description: '',
-      status: 'backlog',
-      priority: 'no_priority',
-      labels: [],
-      assigneeId: null,
-      ...storeDefaults
-    });
+    reset({ ...DEFAULT_VALUES, ...storeDefaults });
+    setSubmissionError(undefined);
   }, [storeDefaults, reset]);
 
-  const handleClose = useCallback(() => {
-    reset();
-    onClose?.();
-  }, [onClose, reset]);
+  const handleClose = useCallback(
+    (force = false) => {
+      if (isPending && !force) return;
 
-  const handleFinish = (values: IssueFields) => {
-    console.log(values);
-    onSubmit?.(values);
-    handleClose();
+      setSubmissionError(undefined);
+      reset();
+      onClose?.();
+    },
+    [isPending, onClose, reset]
+  );
+
+  const handleFinish = async (values: IssueFields) => {
+    if (!onSubmit) return;
+
+    setSubmissionError(undefined);
+
+    try {
+      await onSubmit(values);
+      handleClose(true);
+    } catch (error) {
+      setSubmissionError(getSubmissionErrorMessage(error));
+    }
   };
+
+  const title = form.watch('title');
+  const isSubmitDisabled = isPending || workspaceState !== 'ready' || !title?.trim();
 
   return (
     <>
       <ModalHeader>
-        <IssueModalHeader onClose={handleClose} />
+        <IssueModalHeader onClose={handleClose} workspaceSlug={workspaceSlug} />
       </ModalHeader>
 
       <Form form={form} onFinish={handleFinish} className="contents">
@@ -79,12 +106,22 @@ function IssueForm({ onClose, onSubmit, isPending = false }: IssueFormProps) {
               className="placeholder:text-muted-foreground/50 min-h-24 resize-none border-none p-0 text-sm shadow-none focus-visible:ring-0"
             />
           </FormItem>
+
+          {submissionError && (
+            <p role="alert" className="text-destructive text-sm">
+              {submissionError}
+            </p>
+          )}
         </ModalContent>
 
-        <IssueProperties />
+        <IssueProperties workspaceId={workspaceId} />
 
         <ModalFooter>
-          <Button type="submit" disabled={isPending} className="bg-primary font-medium text-white hover:bg-[#484cb5]">
+          <Button
+            type="submit"
+            disabled={isSubmitDisabled}
+            className="bg-primary font-medium text-white hover:bg-[#484cb5]"
+          >
             {isPending ? 'Creating...' : 'Create issue'}
           </Button>
         </ModalFooter>
