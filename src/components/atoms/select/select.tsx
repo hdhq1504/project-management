@@ -35,6 +35,7 @@ function Select<T>({
 }: SelectProps<T>) {
   const [highlightedValue, setHighlightedValue] = useState<string | undefined>(undefined);
   const itemRefs = useRef<Map<string, HTMLButtonElement | null>>(new Map());
+  const isKeyboardNav = useRef(false);
 
   const navigationItems: ListNavigationItem[] = items.map((item) => ({
     value: getValue(item),
@@ -44,7 +45,10 @@ function Select<T>({
   const { handleKeyDown: handleListKeyDown } = useListNavigation({
     items: navigationItems,
     activeValue: highlightedValue,
-    onActiveValueChange: setHighlightedValue,
+    onActiveValueChange: (val) => {
+      isKeyboardNav.current = true;
+      setHighlightedValue(val);
+    },
     onSelect: (val) => {
       const item = items.find((i) => getValue(i) === val);
       if (item) onValueChange?.(item);
@@ -53,9 +57,10 @@ function Select<T>({
   });
 
   useEffect(() => {
-    if (!highlightedValue) return;
+    if (!highlightedValue || !isKeyboardNav.current) return;
     const el = itemRefs.current.get(highlightedValue);
     el?.focus();
+    isKeyboardNav.current = false;
   }, [highlightedValue]);
 
   useEffect(() => {
