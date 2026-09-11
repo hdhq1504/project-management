@@ -13,6 +13,7 @@ export * from './network-icon';
 export * from './check-icon';
 export * from './user-circle-icon';
 export * from './three-dots-icon';
+export * from './trash-icon';
 export * from './priority-no-priority-icon';
 export * from './priority-urgent-icon';
 export * from './priority-high-icon';
