@@ -62,7 +62,7 @@ function IssueList({ className }: IssueListProps) {
   }
 
   return (
-    <div className={cn('divide-border/30 flex flex-col divide-y pb-16', className)}>
+    <div className={cn('divide-border/30 flex flex-col divide-y', className)}>
       {groupedIssues.map((group) => (
         <IssueGroup
           key={group.status}

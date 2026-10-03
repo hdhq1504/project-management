@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from 'react';
 import { ButtonIssueProperty } from '@/components/atoms/button';
-import { CheckboxGroup, CheckboxGroupItem } from '@/components/molecules/checkbox-group';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/molecules/popover';
+import { IssuePropertyCheckboxMenu } from '@/components/molecules/issue-property-checkbox';
 
 type CheckboxItem = {
   id: string;
@@ -15,7 +15,6 @@ type IssuePropertyCheckboxProps<T extends CheckboxItem> = {
   renderIcon: (item: T) => ReactNode;
   renderTriggerIcon?: (selectedItems: T[]) => ReactNode;
   renderTrigger?: (selectedItems: T[]) => ReactNode;
-  renderItem?: (item: T) => ReactNode;
   placeholder?: string;
 };
 
@@ -26,7 +25,6 @@ function IssuePropertyCheckbox<T extends CheckboxItem>({
   renderIcon,
   renderTriggerIcon,
   renderTrigger,
-  renderItem,
   placeholder = 'Select'
 }: IssuePropertyCheckboxProps<T>) {
   const [open, setOpen] = useState(false);
@@ -55,28 +53,7 @@ function IssuePropertyCheckbox<T extends CheckboxItem>({
       <PopoverTrigger asChild>{trigger}</PopoverTrigger>
 
       <PopoverContent align="start" className="w-[230px] p-0 shadow-xl" onOpenAutoFocus={(e) => e.preventDefault()}>
-        <div className="flex w-[230px] flex-col select-none">
-          <CheckboxGroup
-            name={placeholder.toLowerCase()}
-            value={value}
-            onValueChange={onValueChange}
-            aria-label={placeholder}
-            className="flex max-h-60 flex-col gap-0.5 overflow-y-auto p-1.5"
-          >
-            {items.map((item) => (
-              <CheckboxGroupItem key={item.id} value={item.id}>
-                {renderItem ? (
-                  renderItem(item)
-                ) : (
-                  <>
-                    {renderIcon(item)}
-                    <span className="text-foreground min-w-0 truncate text-[13px] font-medium">{item.name}</span>
-                  </>
-                )}
-              </CheckboxGroupItem>
-            ))}
-          </CheckboxGroup>
-        </div>
+        <IssuePropertyCheckboxMenu items={items} value={value} onValueChange={onValueChange} renderIcon={renderIcon} />
       </PopoverContent>
     </Popover>
   );

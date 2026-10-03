@@ -8,15 +8,27 @@ import { ISSUE_STATUSES } from '@/constants/issue-status';
 import { ISSUE_PRIORITIES } from '@/constants/issue-priority';
 import { StatusIcon } from '@/components/atoms/icon/status-icon';
 import { PriorityIcon } from '@/components/atoms/icon/priority-icon';
-import { LabelIcon, UserCircleIcon } from '@/components/atoms/icon';
+import { LabelIcon, TrashIcon, UserCircleIcon } from '@/components/atoms/icon';
 import { ColorDot } from '@/components/atoms/color-dot';
 import { Badge } from '@/components/atoms/badge';
 import { Avatar } from '@/components/atoms/avatar';
 import { Checkbox } from '@/components/atoms/checkbox';
-import { IssuePropertySelect } from '@/components/molecules/issue-property-select';
-import { IssuePropertyCheckbox } from '@/components/molecules/issue-property-checkbox';
+import { IssuePropertyOptions, IssuePropertySelect } from '@/components/molecules/issue-property-select';
+import { IssuePropertyCheckbox, IssuePropertyCheckboxMenu } from '@/components/molecules/issue-property-checkbox';
 import { formatIssueDate } from '@/utils/issue.utils';
 import { cn } from '@/libs/utils';
+import {
+  ContextMenu,
+  ContextMenuTrigger,
+  ContextMenuContent,
+  ContextMenuShortcut,
+  ContextMenuSub,
+  ContextMenuSubTrigger,
+  ContextMenuSubContent,
+  ContextMenuSeparator,
+  ContextMenuGroup,
+  ContextMenuItem
+} from '@/components/atoms/context-menu';
 
 export type IssueRowProps = {
   issue: Issue;
@@ -41,129 +53,229 @@ function IssueRow({ issue, labels, assignees, onUpdateIssue, className }: IssueR
   );
 
   return (
-    <div
-      className={cn(
-        'group border-border/40 hover:bg-muted/40 flex items-center gap-2 border-b px-4 py-2.5 text-sm transition-colors select-none',
-        className
-      )}
-    >
-      <div
-        className={cn(
-          'flex size-4 shrink-0 items-center justify-center transition-opacity',
-          !isChecked && 'opacity-0 group-hover:opacity-100'
-        )}
-      >
-        <Checkbox checked={isChecked} onChange={(event) => setIsChecked(event.target.checked)} />
-      </div>
-
-      <IssuePropertySelect
-        value={issue.priority}
-        items={ISSUE_PRIORITIES}
-        onValueChange={(priority: IssuePriorityId) => updateIssue({ priority })}
-        renderIcon={(item) => <PriorityIcon priority={item.id} className="size-3.5" />}
-        renderTrigger={({ item }) => (
-          <button
-            type="button"
-            className="text-muted-foreground hover:bg-muted hover:text-foreground flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-xs transition-colors"
-            aria-label="Change priority"
-          >
-            {item && <PriorityIcon priority={item.id} className="size-3.5" />}
-          </button>
-        )}
-      />
-
-      <span className="text-muted-foreground/70 shrink-0 text-sm font-medium tracking-tight">{issue.identifier}</span>
-
-      <IssuePropertySelect
-        value={issue.status}
-        items={ISSUE_STATUSES}
-        onValueChange={(status: IssueStatusId) => updateIssue({ status })}
-        renderIcon={(item) => <StatusIcon status={item.id} className="size-4" />}
-        renderTrigger={({ item }) => (
-          <button
-            type="button"
-            className="text-muted-foreground hover:bg-muted hover:text-foreground flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-xs transition-colors"
-            aria-label="Change status"
-          >
-            {item && <StatusIcon status={item.id} className="size-4" />}
-          </button>
-        )}
-      />
-
-      <div className="min-w-0 flex-1 pr-4">
-        <span className="text-foreground block truncate text-sm font-medium transition-colors group-hover:text-white">
-          {issue.title}
-        </span>
-        {updateError && (
-          <span role="alert" className="text-destructive block truncate text-xs" title={updateError}>
-            {updateError}
-          </span>
-        )}
-      </div>
-
-      <IssuePropertyCheckbox
-        items={labels}
-        value={issue.labelIds ?? []}
-        onValueChange={(labelIds) => updateIssue({ labelIds })}
-        placeholder="Labels"
-        renderIcon={(label) => <ColorDot color={label.color} />}
-        renderTrigger={(selectedLabels) =>
-          selectedLabels.length === 0 ? (
-            <button
-              type="button"
-              className="text-muted-foreground hover:bg-muted hover:text-foreground flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-xs opacity-0 transition-all group-hover:opacity-100"
-              aria-label="Add labels"
-            >
-              <LabelIcon className="size-3.5" />
-            </button>
-          ) : (
-            <button
-              type="button"
-              className="inline-flex cursor-pointer items-center gap-1.5 transition-opacity hover:opacity-80"
-              aria-label="Manage labels"
-            >
-              {selectedLabels.map((label) => (
-                <Badge key={label.id} variant="outline">
-                  <ColorDot color={label.color} />
-                  {label.name}
-                </Badge>
-              ))}
-            </button>
-          )
-        }
-      />
-
-      <IssuePropertySelect
-        items={assignees}
-        value={issue.assigneeId}
-        onValueChange={(assigneeId) => updateIssue({ assigneeId })}
-        onClear={() => updateIssue({ assigneeId: null })}
-        clearLabel="Unassigned"
-        clearShortcut="0"
-        invalidLabel="Current assignee"
-        renderIcon={(assignee) => <Avatar size="xs" name={assignee.name} src={assignee.avatarUrl} />}
-        placeholder="Assignee"
-        fallbackIcon={<UserCircleIcon className="size-4" />}
-        renderTrigger={({ item, isInvalid }) => (
-          <button
-            type="button"
+    <ContextMenu>
+      <ContextMenuTrigger>
+        <div
+          className={cn(
+            'group border-border/40 hover:bg-muted/40 flex items-center gap-2 border-b px-4 py-2.5 text-sm transition-colors select-none',
+            className
+          )}
+        >
+          <div
             className={cn(
-              'text-muted-foreground/60 hover:bg-muted hover:text-foreground flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-full transition-colors',
-              isInvalid && 'text-amber-500 ring-1 ring-amber-500/50'
+              'flex size-4 shrink-0 items-center justify-center transition-opacity',
+              !isChecked && 'opacity-0 group-hover:opacity-100'
             )}
-            aria-label={isInvalid ? 'Current assignee' : 'Change assignee'}
           >
-            {item ? (
-              <Avatar size="xs" name={item.name} src={item.avatarUrl} />
-            ) : (
-              <UserCircleIcon className={cn('size-4', isInvalid && 'text-amber-500')} />
-            )}
-          </button>
-        )}
-      />
+            <Checkbox checked={isChecked} onChange={(event) => setIsChecked(event.target.checked)} />
+          </div>
 
-      <span className="text-muted-foreground/60 shrink-0 text-right text-sm">{formatIssueDate(issue.createdAt)}</span>
-    </div>
+          <IssuePropertySelect
+            value={issue.priority}
+            items={ISSUE_PRIORITIES}
+            onValueChange={(priority: IssuePriorityId) => updateIssue({ priority })}
+            renderIcon={(item) => <PriorityIcon priority={item.id} className="size-3.5" />}
+            renderTrigger={({ item }) => (
+              <button
+                type="button"
+                className="text-muted-foreground hover:bg-muted hover:text-foreground flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-xs transition-colors"
+                aria-label="Change priority"
+              >
+                {item && <PriorityIcon priority={item.id} className="size-3.5" />}
+              </button>
+            )}
+          />
+
+          <span className="text-muted-foreground/70 shrink-0 text-sm font-medium tracking-tight">
+            {issue.identifier}
+          </span>
+
+          <IssuePropertySelect
+            value={issue.status}
+            items={ISSUE_STATUSES}
+            onValueChange={(status: IssueStatusId) => updateIssue({ status })}
+            renderIcon={(item) => <StatusIcon status={item.id} className="size-4" />}
+            renderTrigger={({ item }) => (
+              <button
+                type="button"
+                className="text-muted-foreground hover:bg-muted hover:text-foreground flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-xs transition-colors"
+                aria-label="Change status"
+              >
+                {item && <StatusIcon status={item.id} className="size-4" />}
+              </button>
+            )}
+          />
+
+          <div className="min-w-0 flex-1 pr-4">
+            <span className="text-foreground block truncate text-sm font-medium transition-colors group-hover:text-white">
+              {issue.title}
+            </span>
+            {updateError && (
+              <span role="alert" className="text-destructive block truncate text-xs" title={updateError}>
+                {updateError}
+              </span>
+            )}
+          </div>
+
+          <IssuePropertyCheckbox
+            items={labels}
+            value={issue.labelIds ?? []}
+            onValueChange={(labelIds) => updateIssue({ labelIds })}
+            placeholder="Labels"
+            renderIcon={(label) => <ColorDot color={label.color} />}
+            renderTrigger={(selectedLabels) =>
+              selectedLabels.length === 0 ? (
+                <button
+                  type="button"
+                  className="text-muted-foreground hover:bg-muted hover:text-foreground flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-xs opacity-0 transition-all group-hover:opacity-100"
+                  aria-label="Add labels"
+                >
+                  <LabelIcon className="size-3.5" />
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  className="inline-flex cursor-pointer items-center gap-1.5 transition-opacity hover:opacity-80"
+                  aria-label="Manage labels"
+                >
+                  {selectedLabels.map((label) => (
+                    <Badge key={label.id} variant="outline">
+                      <ColorDot color={label.color} />
+                      {label.name}
+                    </Badge>
+                  ))}
+                </button>
+              )
+            }
+          />
+
+          <IssuePropertySelect
+            items={assignees}
+            value={issue.assigneeId}
+            onValueChange={(assigneeId) => updateIssue({ assigneeId })}
+            onClear={() => updateIssue({ assigneeId: null })}
+            clearLabel="Unassigned"
+            clearShortcut="0"
+            invalidLabel="Current assignee"
+            renderIcon={(assignee) => <Avatar size="xs" name={assignee.name} src={assignee.avatarUrl} />}
+            placeholder="Assignee"
+            fallbackIcon={<UserCircleIcon className="size-4" />}
+            renderTrigger={({ item, isInvalid }) => (
+              <button
+                type="button"
+                className={cn(
+                  'text-muted-foreground/60 hover:bg-muted hover:text-foreground flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-full transition-colors',
+                  isInvalid && 'text-amber-500 ring-1 ring-amber-500/50'
+                )}
+                aria-label={isInvalid ? 'Current assignee' : 'Change assignee'}
+              >
+                {item ? (
+                  <Avatar size="xs" name={item.name} src={item.avatarUrl} />
+                ) : (
+                  <UserCircleIcon className={cn('size-4', isInvalid && 'text-amber-500')} />
+                )}
+              </button>
+            )}
+          />
+
+          <span className="text-muted-foreground/60 shrink-0 text-right text-sm">
+            {formatIssueDate(issue.createdAt)}
+          </span>
+        </div>
+      </ContextMenuTrigger>
+
+      <ContextMenuContent>
+        {/* Status */}
+        <ContextMenuSub>
+          <ContextMenuSubTrigger>
+            <StatusIcon />
+            Status
+            <ContextMenuShortcut>S</ContextMenuShortcut>
+          </ContextMenuSubTrigger>
+          <ContextMenuSubContent className="w-[230px] p-0">
+            <IssuePropertyOptions
+              items={ISSUE_STATUSES}
+              value={issue.status}
+              onValueChange={(status) =>
+                updateIssue({
+                  status: status as IssueStatusId
+                })
+              }
+              renderIcon={(item) => <StatusIcon status={item.id} className="size-4" />}
+            />
+          </ContextMenuSubContent>
+        </ContextMenuSub>
+
+        {/* Priority */}
+        <ContextMenuSub>
+          <ContextMenuSubTrigger>
+            <PriorityIcon />
+            Priority
+            <ContextMenuShortcut>P</ContextMenuShortcut>
+          </ContextMenuSubTrigger>
+          <ContextMenuSubContent className="w-[230px] p-0">
+            <IssuePropertyOptions
+              items={ISSUE_PRIORITIES}
+              value={issue.priority}
+              onValueChange={(priority) =>
+                updateIssue({
+                  priority: priority as IssuePriorityId
+                })
+              }
+              renderIcon={(item) => <PriorityIcon priority={item.id} className="size-4" />}
+            />
+          </ContextMenuSubContent>
+        </ContextMenuSub>
+
+        {/* Assignee */}
+        <ContextMenuSub>
+          <ContextMenuSubTrigger>
+            <UserCircleIcon />
+            Assignee
+            <ContextMenuShortcut>A</ContextMenuShortcut>
+          </ContextMenuSubTrigger>
+          <ContextMenuSubContent className="w-[230px] p-0">
+            <IssuePropertyOptions
+              items={assignees}
+              value={issue.assigneeId}
+              onValueChange={(assigneeId) => updateIssue({ assigneeId })}
+              onClear={() => updateIssue({ assigneeId: null })}
+              clearLabel="Unassinged"
+              clearShortcut="0"
+              renderIcon={(assignee) => <Avatar size="xs" name={assignee.name} src={assignee.avatarUrl} />}
+              fallbackIcon={<UserCircleIcon className="size-4" />}
+            />
+          </ContextMenuSubContent>
+        </ContextMenuSub>
+
+        {/* Labels */}
+        <ContextMenuSub>
+          <ContextMenuSubTrigger>
+            <LabelIcon />
+            Labels
+            <ContextMenuShortcut>L</ContextMenuShortcut>
+          </ContextMenuSubTrigger>
+          <ContextMenuSubContent className="w-[230px] p-0">
+            <IssuePropertyCheckboxMenu
+              items={labels}
+              value={issue.labelIds ?? []}
+              onValueChange={(labelIds) => updateIssue({ labelIds })}
+              renderIcon={(label) => <ColorDot color={label.color} />}
+            />
+          </ContextMenuSubContent>
+        </ContextMenuSub>
+
+        <ContextMenuSeparator />
+
+        {/* Delete */}
+        <ContextMenuGroup>
+          <ContextMenuItem variant="destructive">
+            <TrashIcon />
+            Delete
+          </ContextMenuItem>
+        </ContextMenuGroup>
+      </ContextMenuContent>
+    </ContextMenu>
   );
 }
 
